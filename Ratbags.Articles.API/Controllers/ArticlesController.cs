@@ -27,14 +27,11 @@ public class ArticlesController : ControllerBase
     {
         try
         {
-            if (createArticleDTO != null)
+            var articleId = await _service.CreateArticleAsync(createArticleDTO);
+
+            if (articleId != Guid.Empty)
             {
-                var articleId = await _service.CreateArticleAsync(createArticleDTO);
-                return CreatedAtAction(nameof(Create),
-                    new
-                    {
-                        id = articleId
-                    });
+                return Created(nameof(GetArticleById), articleId);
             }
 
             return NotFound();
@@ -76,7 +73,7 @@ public class ArticlesController : ControllerBase
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ArticleDTO), (int)HttpStatusCode.OK)]
     [SwaggerOperation(Summary = "Gets an article by id", Description = "Retrieves a specific article by its id")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetArticleById(Guid id)
     {
         try
         {
@@ -96,7 +93,7 @@ public class ArticlesController : ControllerBase
         }
     }
 
-    [HttpPost("Update")]
+    [HttpPut("Update")]
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
     [ProducesResponseType((int)HttpStatusCode.NoContent)]
