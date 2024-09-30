@@ -16,7 +16,7 @@ if (builder.Environment.IsDevelopment())
 builder.Services.Configure<AppSettingsBase>(builder.Configuration);
 var appSettings = builder.Configuration.Get<AppSettingsBase>() ?? throw new Exception("Appsettings missing");
 
-// Configure Kestrel to use HTTPS on port 5001
+// config kestrel for https on 5001
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
     serverOptions.ListenAnyIP(5078); // HTTP
@@ -28,7 +28,7 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
     });
 });
 
-// Configure CORS
+// config cors
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
@@ -40,7 +40,7 @@ builder.Services.AddCors(options =>
             .AllowCredentials());
 });
 
-// Add services to the container.
+// add services to container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -64,10 +64,10 @@ builder.Services.AddMassTransit(x =>
             h.Password(appSettings.Messaging.Password);
         });
 
-        // Ensure you're sending messages to the correct exchange and routing key
+        // ensure messages sent to correct exchange and routing key
         cfg.Message<CommentsForArticleRequest>(c =>
         {
-            c.SetEntityName("articles.comments.exchange"); // Sets the exchange name for this message type
+            c.SetEntityName("articles.comments.exchange"); // set exchange name for this message type
         });
 
         cfg.Send<CommentsForArticleRequest>(x =>
@@ -79,15 +79,26 @@ builder.Services.AddMassTransit(x =>
 
 var app = builder.Build();
 
-// Enable CORS
+// cors
 app.UseCors("AllowSpecificOrigin");
 
-// Configure the HTTP request pipeline.
+// config http request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+if (!app.Environment.IsDevelopment())
+{
+    // This middleware will handle errors in production
+    app.UseExceptionHandler("/error");  // Replace "/error" with a global error endpoint if you have one
+}
+else
+{
+    // In development, show detailed exceptions on the page
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();

@@ -37,9 +37,17 @@ public class ArticlesService : IArticlesService
         return articleId;
     }
 
-    public async Task DeleteArticleAsync(Guid id)
+    public async Task<bool> DeleteArticleAsync(Guid id)
     {
+        var article = await _repository.GetArticleByIdAsync(id);
+
+        if (article == null)
+        {
+            return false;  // Indicate that the article wasn't found
+        }
+
         await _repository.DeleteArticleAsync(id);
+        return true;
     }
 
     public async Task<IEnumerable<ArticleDTO>> GetAllArticlesAsync()
@@ -62,22 +70,27 @@ public class ArticlesService : IArticlesService
         return articlesDTO.OrderBy(x => x.Created);
     }
 
-    public async Task<ArticleDTO> GetArticleByIdAsync(Guid id)
+    public async Task<ArticleDTO?> GetArticleByIdAsync(Guid id)
     {
         var article = await _repository.GetArticleByIdAsync(id);
 
-        var response = await _massTrasitClient.GetResponse<CommentsForArticleResponse>(new CommentsForArticleRequest { ArticleId = id });
-
-        return new ArticleDTO
+        if (article != null)
         {
-            Id = article.Id,
-            Title = article.Title,
-            Content = article.Content,
-            Created = article.Created,
-            Updated = article.Updated,
-            Published = article.Published,
-            Comments = response.Message.Comments
-        };
+            var response = await _massTrasitClient.GetResponse<CommentsForArticleResponse>(new CommentsForArticleRequest { ArticleId = id });
+
+            return new ArticleDTO
+            {
+                Id = article.Id,
+                Title = article.Title,
+                Content = article.Content,
+                Created = article.Created,
+                Updated = article.Updated,
+                Published = article.Published,
+                Comments = response.Message.Comments
+            };
+        }
+
+        return null;
     }
 
     public async Task<bool> UpdateArticleAsync(ArticleDTO articleDTO)
