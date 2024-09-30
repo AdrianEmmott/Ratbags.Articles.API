@@ -105,7 +105,6 @@ public class ArticlesController : ControllerBase
         }
     }
 
-
     [HttpPut]
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -129,6 +128,5 @@ public class ArticlesController : ControllerBase
             _logger.LogError($"Error updating article {articleDTO.Id}: {e.Message}");
             return StatusCode(500, "An error occurred while updating the article");
         }
-        
     }
 }

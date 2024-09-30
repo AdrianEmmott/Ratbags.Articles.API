@@ -40,11 +40,18 @@ public class ArticlesRepository : IArticlesRepository
         return await _context.Articles.ToListAsync();
     }
 
-    public async Task<Article> GetArticleByIdAsync(Guid id)
+    public async Task<Article?> GetArticleByIdAsync(Guid id)
     {
         _logger.LogInformation($"get article id {id}");
 
-        return await _context.Articles.FirstOrDefaultAsync(x => x.Id == id);
+        var result = await _context.Articles.FirstOrDefaultAsync(x => x.Id == id);
+
+        if (result != null)
+        {
+            return result;
+        }
+
+        return null;
     }
 
     public async Task UpdateArticleAsync(Article article)

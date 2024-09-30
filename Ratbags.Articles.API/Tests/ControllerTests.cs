@@ -12,10 +12,12 @@ namespace Ratbags.Articles.API.Tests
     public class ControllerTests
     {
         private Mock<IArticlesService> _mockService;
-        private Mock<ILogger<ArticlesController>>_mockLogger;
+        private Mock<ILogger<ArticlesController>> _mockLogger;
+
         private ArticlesController _controller;
 
-        [SetUp] public void SetUp() 
+        [SetUp]
+        public void SetUp()
         {
             _mockService = new Mock<IArticlesService>();
             _mockLogger = new Mock<ILogger<ArticlesController>>();
@@ -73,9 +75,7 @@ namespace Ratbags.Articles.API.Tests
             Assert.That(statusCodeResult.StatusCode, Is.EqualTo(500));
             Assert.That(statusCodeResult.Value, Is.EqualTo("An error occurred while deleting the article"));
         }
-        // /DELETE
-        //
-        //
+
         // GET/{ID}
         [Test]
         public async Task GetArticle_Ok()
@@ -101,7 +101,7 @@ namespace Ratbags.Articles.API.Tests
 
             // mock return null (article not found)
             _mockService.Setup(s => s.GetArticleByIdAsync(It.IsAny<Guid>()))
-                       .ReturnsAsync((ArticleDTO)null);
+                       .ReturnsAsync(null as ArticleDTO);
 
             // act
             var result = await _controller.Get(articleId);
@@ -126,8 +126,6 @@ namespace Ratbags.Articles.API.Tests
             // assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
         }
-        // GET/{ID}
-
 
         // GET (ALL)
         [Test]
@@ -143,8 +141,7 @@ namespace Ratbags.Articles.API.Tests
             // assert
             Assert.That(result, Is.TypeOf<OkObjectResult>());
         }
-        // /GET (ALL)
-        
+
 
         // CREATE
         [Test]
@@ -154,15 +151,15 @@ namespace Ratbags.Articles.API.Tests
             _mockService.Setup(s => s.CreateArticleAsync(It.IsAny<CreateArticleDTO>()))
                        .ReturnsAsync(Guid.NewGuid());
 
-            var article = new CreateArticleDTO
+            var createArticleDTO = new CreateArticleDTO
             {
                 Title = "An article title",
                 Content = "<p>lorem ipsum</p>",
-                Created=DateTime.Now,
+                Created = DateTime.Now,
             };
 
             // act 
-            var result = await _controller.Post(article);
+            var result = await _controller.Post(createArticleDTO);
 
             // assert
             Assert.That(result, Is.TypeOf<CreatedAtActionResult>());
@@ -175,7 +172,7 @@ namespace Ratbags.Articles.API.Tests
             _mockService.Setup(s => s.CreateArticleAsync(It.IsAny<CreateArticleDTO>()))
                        .ReturnsAsync(Guid.Empty);
 
-            var article = new CreateArticleDTO
+            var createArticleDTO = new CreateArticleDTO
             {
                 Title = "An article title",
                 Content = "<p>lorem ipsum</p>",
@@ -183,7 +180,7 @@ namespace Ratbags.Articles.API.Tests
             };
 
             // act 
-            var result = await _controller.Post(article);
+            var result = await _controller.Post(createArticleDTO);
 
             // assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
@@ -195,7 +192,7 @@ namespace Ratbags.Articles.API.Tests
             _mockService.Setup(s => s.CreateArticleAsync(It.IsAny<CreateArticleDTO>()))
                 .ThrowsAsync(new Exception("test exception"));
 
-            var article = new CreateArticleDTO
+            var createArticleDTO = new CreateArticleDTO
             {
                 Title = "An article title",
                 Content = "<p>lorem ipsum</p>",
@@ -203,7 +200,7 @@ namespace Ratbags.Articles.API.Tests
             };
 
             // act
-            var result = await _controller.Post(article);
+            var result = await _controller.Post(createArticleDTO);
 
             // asert
             var statusCodeResult = result as ObjectResult;
@@ -211,18 +208,16 @@ namespace Ratbags.Articles.API.Tests
             Assert.That(statusCodeResult.StatusCode, Is.EqualTo(500));
             Assert.That(statusCodeResult.Value, Is.EqualTo("An error occurred while creating the article"));
         }
-        // /CREATE
-        //
-        //
+
         // UPDATE
         [Test]
         public async Task UpdateArticle_NoContent()
         {
             // arrange
-            _mockService.Setup(s=>s.UpdateArticleAsync(It.IsAny<ArticleDTO>()))
+            _mockService.Setup(s => s.UpdateArticleAsync(It.IsAny<ArticleDTO>()))
                 .ReturnsAsync(true);
 
-            var article = new ArticleDTO
+            var articleDTO = new ArticleDTO
             {
                 Title = "An article title",
                 Content = "<p>lorem ipsum</p>",
@@ -230,7 +225,7 @@ namespace Ratbags.Articles.API.Tests
             };
 
             // act
-            var result = await _controller.Put(article);
+            var result = await _controller.Put(articleDTO);
 
             // assert
             Assert.That(result, Is.TypeOf<NoContentResult>());
@@ -243,7 +238,7 @@ namespace Ratbags.Articles.API.Tests
             _mockService.Setup(s => s.UpdateArticleAsync(It.IsAny<ArticleDTO>()))
                 .ReturnsAsync(false);
 
-            var article = new ArticleDTO
+            var articleDTO = new ArticleDTO
             {
                 Title = "An article title",
                 Content = "<p>lorem ipsum</p>",
@@ -251,7 +246,7 @@ namespace Ratbags.Articles.API.Tests
             };
 
             // act
-            var result = await _controller.Put(article);
+            var result = await _controller.Put(articleDTO);
 
             // assert
             Assert.That(result, Is.TypeOf<NotFoundResult>());
@@ -263,7 +258,7 @@ namespace Ratbags.Articles.API.Tests
             _mockService.Setup(s => s.UpdateArticleAsync(It.IsAny<ArticleDTO>()))
                 .ThrowsAsync(new Exception("test exception"));
 
-            var article = new ArticleDTO
+            var articleDTO = new ArticleDTO
             {
                 Title = "An article title",
                 Content = "<p>lorem ipsum</p>",
@@ -271,7 +266,7 @@ namespace Ratbags.Articles.API.Tests
             };
 
             // act
-            var result = await _controller.Put(article);
+            var result = await _controller.Put(articleDTO);
 
             // assert
             var statusCodeResult = result as ObjectResult;
@@ -279,6 +274,5 @@ namespace Ratbags.Articles.API.Tests
             Assert.That(statusCodeResult.StatusCode, Is.EqualTo(500));
             Assert.That(statusCodeResult.Value, Is.EqualTo("An error occurred while updating the article"));
         }
-        // /UPDATE
     }
 }

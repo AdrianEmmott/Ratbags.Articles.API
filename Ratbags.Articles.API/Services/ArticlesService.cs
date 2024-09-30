@@ -67,7 +67,7 @@ public class ArticlesService : IArticlesService
 
         // TODO - write something in comments that gets the number of comments / article
         
-        return articlesDTO.OrderBy(x => x.Created);
+        return articlesDTO.OrderByDescending(x => x.Created);
     }
 
     public async Task<ArticleDTO?> GetArticleByIdAsync(Guid id)
@@ -76,7 +76,11 @@ public class ArticlesService : IArticlesService
 
         if (article != null)
         {
-            var response = await _massTrasitClient.GetResponse<CommentsForArticleResponse>(new CommentsForArticleRequest { ArticleId = id });
+            var response = await _massTrasitClient
+                .GetResponse<CommentsForArticleResponse>
+                (new CommentsForArticleRequest {
+                    ArticleId = id
+                });
 
             return new ArticleDTO
             {
@@ -95,7 +99,7 @@ public class ArticlesService : IArticlesService
 
     public async Task<bool> UpdateArticleAsync(ArticleDTO articleDTO)
     {
-        var existingArticle = await _repository.GetArticleByIdAsync(articleDTO.Id.Value);
+        var existingArticle = await _repository.GetArticleByIdAsync(articleDTO.Id);
 
         if (existingArticle == null)
         {
