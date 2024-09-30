@@ -6,8 +6,6 @@ using System.Net;
 
 namespace Ratbags.Articles.API.Controllers;
 
-[ApiController]
-//[Route("api/[controller]")]
 [Route("api/articles")]
 public class ArticlesController : ControllerBase
 {
@@ -18,54 +16,31 @@ public class ArticlesController : ControllerBase
         _service = service;
     }
 
-    [HttpPost("Create")]
+    [HttpDelete("{id}")]
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(Guid), (int)HttpStatusCode.Created)]
-    [SwaggerOperation(Summary = "Creates an article", Description = "Creates an article")]
-    public async Task<IActionResult> Create([FromBody] CreateArticleDTO createArticleDTO)
+    [ProducesResponseType((int)HttpStatusCode.NoContent)]
+    [SwaggerOperation(Summary = "Deletes an article by id", Description = "Deletes an article by id")]
+    public async Task<IActionResult> Delete(Guid id)
     {
-        try
-        {
-            var articleId = await _service.CreateArticleAsync(createArticleDTO);
+        await _service.DeleteArticleAsync(id);
 
-            if (articleId != Guid.Empty)
-            {
-                return Created(nameof(GetArticleById), articleId);
-            }
-
-            return NotFound();
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-            throw;
-        }
+        return NoContent();
     }
 
-    [HttpGet("all")]
+    [HttpGet]
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType((int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(List<ArticleDTO>), (int)HttpStatusCode.OK)]
     [SwaggerOperation(Summary = "Gets all articles", Description = "Retrieves a list of all articles")]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult?> Get()
     {
-        try
-        {
-            var articles = await _service.GetAllArticlesAsync();
+        var articles = await _service.GetAllArticlesAsync();
 
-            if (articles != null)
-            {
-                return Ok(articles);
-            }
-
-            return NotFound();
-        }
-        catch (Exception e)
+        if (articles != null)
         {
-            return BadRequest(e.Message);
-            throw;
+            return Ok(articles);
         }
+
+        return null;
     }
 
     [HttpGet("{id}")]
@@ -75,50 +50,55 @@ public class ArticlesController : ControllerBase
     [SwaggerOperation(Summary = "Gets an article by id", Description = "Retrieves a specific article by its id")]
     public async Task<IActionResult> GetArticleById(Guid id)
     {
-        try
-        {
-            var article = await _service.GetArticleByIdAsync(id);
+        var article = await _service.GetArticleByIdAsync(id);
 
-            if (article != null)
-            {
-                return Ok(article);
-            }
-
-            return NotFound();
-        }
-        catch (Exception e)
+        if (article != null)
         {
-            return BadRequest(e.Message);
-            throw;
+            return Ok(article);
         }
+
+        return NotFound();
     }
 
-    [HttpPut("Update")]
+    [HttpPost]
+    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(Guid), (int)HttpStatusCode.Created)]
+    [SwaggerOperation(Summary = "Creates an article", Description = "Creates an article")]
+    public async Task<IActionResult?> Post([FromBody] CreateArticleDTO createArticleDTO)
+    {
+        // TODO should be able to remove this when you get auto validation sorted
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var articleId = await _service.CreateArticleAsync(createArticleDTO);
+
+        if (articleId != Guid.Empty)
+        {
+            var action = CreatedAtAction(nameof(GetArticleById), new { id = articleId }, createArticleDTO);
+
+            Console.WriteLine(action);
+            return action;
+        }
+
+        return null;
+    }
+
+    [HttpPut]
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
     [ProducesResponseType((int)HttpStatusCode.NoContent)]
     [SwaggerOperation(Summary = "Updates an article", Description = "Updates an article")]
-    public async Task<IActionResult> Update([FromBody] ArticleDTO articleDTO)
+    public async Task<IActionResult> Put([FromBody] ArticleDTO articleDTO)
     {
-        try
-        {
-            if (articleDTO != null)
-            {
-                if (articleDTO.Id != null)
-                {
-                    await _service.UpdateArticleAsync(articleDTO);
-                    return NoContent();
-                }
+        var result = await _service.UpdateArticleAsync(articleDTO);
 
-                return BadRequest("Article id missing");
-            }
-            
+        if (!result)
+        {
             return NotFound();
         }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-            throw;
-        }
+
+        return NoContent();
     }
 }

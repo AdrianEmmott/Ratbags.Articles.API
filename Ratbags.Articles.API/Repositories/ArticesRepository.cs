@@ -26,6 +26,7 @@ public class ArticlesRepository : IArticlesRepository
     public async Task DeleteArticleAsync(Guid id)
     {
         var article = await _context.Articles.FindAsync(id);
+
         if (article != null)
         {
             _context.Articles.Remove(article);
@@ -42,12 +43,14 @@ public class ArticlesRepository : IArticlesRepository
     public async Task<Article> GetArticleByIdAsync(Guid id)
     {
         _logger.LogInformation($"get article id {id}");
+
         return await _context.Articles.FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task UpdateArticleAsync(Article article)
     {
         _logger.LogInformation($"update article id {article.Id}");
+
         _context.Articles.Update(article);
         await _context.SaveChangesAsync();
     }

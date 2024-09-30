@@ -8,5 +8,5 @@ public interface IArticlesService
     Task DeleteArticleAsync(Guid id);
     Task<IEnumerable<ArticleDTO>> GetAllArticlesAsync();
     Task<ArticleDTO> GetArticleByIdAsync(Guid id);
-    Task UpdateArticleAsync(ArticleDTO article);
+    Task<bool> UpdateArticleAsync(ArticleDTO article);
 }
