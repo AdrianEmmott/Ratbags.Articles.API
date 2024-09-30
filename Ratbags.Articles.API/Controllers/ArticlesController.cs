@@ -66,7 +66,6 @@ public class ArticlesController : ControllerBase
     [SwaggerOperation(Summary = "Creates an article", Description = "Creates an article")]
     public async Task<IActionResult?> Post([FromBody] CreateArticleDTO createArticleDTO)
     {
-        // TODO should be able to remove this when you get auto validation sorted
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
