@@ -7,26 +7,33 @@ using Ratbags.Shared.DTOs.Events.DTOs.Articles;
 
 namespace Ratbags.Articles.API.Tests
 {
-    
+
+    [TestFixture]
     public class ControllerTests
     {
+        private Mock<IArticlesService> _mockService;
+        private Mock<ILogger<ArticlesController>>_mockLogger;
+        private ArticlesController _controller;
+
+        [SetUp] public void SetUp() 
+        {
+            _mockService = new Mock<IArticlesService>();
+            _mockLogger = new Mock<ILogger<ArticlesController>>();
+            _controller = new ArticlesController(_mockService.Object, _mockLogger.Object);
+        }
+
         // DELETE
         [Test]
         public async Task DeleteArticle_NoContent()
         {
             // arrange
-            var mockService = new Mock<IArticlesService>();
-            var mockLogger = new Mock<ILogger<ArticlesController>>();
-
-            mockService.Setup(s => s.DeleteArticleAsync(It.IsAny<Guid>()))
+            _mockService.Setup(s => s.DeleteArticleAsync(It.IsAny<Guid>()))
                 .ReturnsAsync(true);
-
-            var controller = new ArticlesController(mockService.Object, mockLogger.Object);
 
             var articleId = Guid.NewGuid();
 
             // act
-            var result = await controller.Delete(articleId);
+            var result = await _controller.Delete(articleId);
 
             // asert
             Assert.That(result, Is.TypeOf<NoContentResult>());
@@ -36,18 +43,13 @@ namespace Ratbags.Articles.API.Tests
         public async Task DeleteArticle_NotFound()
         {
             // arrange
-            var mockService = new Mock<IArticlesService>();
-            var mockLogger = new Mock<ILogger<ArticlesController>>();
-
-            mockService.Setup(s => s.DeleteArticleAsync(It.IsAny<Guid>()))
+            _mockService.Setup(s => s.DeleteArticleAsync(It.IsAny<Guid>()))
                 .ReturnsAsync(false);
-
-            var controller = new ArticlesController(mockService.Object, mockLogger.Object);
 
             var articleId = Guid.Empty;
 
             // act
-            var result = await controller.Delete(articleId);
+            var result = await _controller.Delete(articleId);
 
             // asert
             Assert.That(result, Is.TypeOf<NotFoundResult>());
@@ -57,18 +59,13 @@ namespace Ratbags.Articles.API.Tests
         public async Task DeleteArticle_Exception()
         {
             // arrange
-            var mockService = new Mock<IArticlesService>();
-            var mockLogger = new Mock<ILogger<ArticlesController>>();
-
-            mockService.Setup(s => s.DeleteArticleAsync(It.IsAny<Guid>()))
+            _mockService.Setup(s => s.DeleteArticleAsync(It.IsAny<Guid>()))
                 .ThrowsAsync(new Exception("test exception"));
-
-            var controller = new ArticlesController(mockService.Object, mockLogger.Object);
 
             var articleId = Guid.Empty;
 
             // act
-            var result = await controller.Delete(articleId);
+            var result = await _controller.Delete(articleId);
 
             // asert
             var statusCodeResult = result as ObjectResult;
@@ -84,18 +81,13 @@ namespace Ratbags.Articles.API.Tests
         public async Task GetArticle_Ok()
         {
             // arrange
-            var mockService = new Mock<IArticlesService>();
-            var mockLogger = new Mock<ILogger<ArticlesController>>();
-
-            mockService.Setup(s => s.GetArticleByIdAsync(It.IsAny<Guid>()))
+            _mockService.Setup(s => s.GetArticleByIdAsync(It.IsAny<Guid>()))
                        .ReturnsAsync(new ArticleDTO());
-
-            var controller = new ArticlesController(mockService.Object, mockLogger.Object);
 
             var articleId = Guid.NewGuid();
 
             // act
-            var result = await controller.Get(articleId);
+            var result = await _controller.Get(articleId);
 
             // assert
             Assert.That(result, Is.TypeOf<OkObjectResult>());
@@ -105,19 +97,14 @@ namespace Ratbags.Articles.API.Tests
         public async Task GetArticleNotFound()
         {
             // arrange
-            var mockService = new Mock<IArticlesService>();
-            var mockLogger = new Mock<ILogger<ArticlesController>>();
-
             var articleId = Guid.NewGuid();
 
             // mock return null (article not found)
-            mockService.Setup(s => s.GetArticleByIdAsync(It.IsAny<Guid>()))
+            _mockService.Setup(s => s.GetArticleByIdAsync(It.IsAny<Guid>()))
                        .ReturnsAsync((ArticleDTO)null);
 
-            var controller = new ArticlesController(mockService.Object, mockLogger.Object);
-
             // act
-            var result = await controller.Get(articleId);
+            var result = await _controller.Get(articleId);
 
             // assert
             Assert.That(result, Is.TypeOf<NotFoundResult>());
@@ -127,19 +114,14 @@ namespace Ratbags.Articles.API.Tests
         public async Task GetArticle_BadRequest()
         {
             // arrange
-            var mockService = new Mock<IArticlesService>();
-            var mockLogger = new Mock<ILogger<ArticlesController>>();
-
-            mockService.Setup(s => s.GetArticleByIdAsync(It.IsAny<Guid>()))
+            _mockService.Setup(s => s.GetArticleByIdAsync(It.IsAny<Guid>()))
                        .ReturnsAsync(new ArticleDTO());
-
-            var controller = new ArticlesController(mockService.Object, mockLogger.Object);
 
             // no guid
             var articleId = Guid.Empty;
 
             // act
-            var result = await controller.Get(articleId);
+            var result = await _controller.Get(articleId);
 
             // assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
@@ -152,16 +134,11 @@ namespace Ratbags.Articles.API.Tests
         public async Task GetArticles_Ok()
         {
             // arrange
-            var mockService = new Mock<IArticlesService>();
-            var mockLogger = new Mock<ILogger<ArticlesController>>();
-
-            mockService.Setup(s => s.GetAllArticlesAsync())
+            _mockService.Setup(s => s.GetAllArticlesAsync())
                        .ReturnsAsync(new List<ArticleDTO>());
 
-            var controller = new ArticlesController(mockService.Object, mockLogger.Object);
-
             // act
-            var result = await controller.Get();
+            var result = await _controller.Get();
 
             // assert
             Assert.That(result, Is.TypeOf<OkObjectResult>());
@@ -174,13 +151,8 @@ namespace Ratbags.Articles.API.Tests
         public async Task CreateArticle_NoContent()
         {
             // arrange
-            var mockService = new Mock<IArticlesService>();
-            var mockLogger = new Mock<ILogger<ArticlesController>>();
-
-            mockService.Setup(s => s.CreateArticleAsync(It.IsAny<CreateArticleDTO>()))
+            _mockService.Setup(s => s.CreateArticleAsync(It.IsAny<CreateArticleDTO>()))
                        .ReturnsAsync(Guid.NewGuid());
-
-            var controller = new ArticlesController(mockService.Object, mockLogger.Object);
 
             var article = new CreateArticleDTO
             {
@@ -190,7 +162,7 @@ namespace Ratbags.Articles.API.Tests
             };
 
             // act 
-            var result = await controller.Post(article);
+            var result = await _controller.Post(article);
 
             // assert
             Assert.That(result, Is.TypeOf<CreatedAtActionResult>());
@@ -200,13 +172,8 @@ namespace Ratbags.Articles.API.Tests
         public async Task CreateArticle_BadRequest()
         {
             // arrange
-            var mockService = new Mock<IArticlesService>();
-            var mockLogger = new Mock<ILogger<ArticlesController>>();
-
-            mockService.Setup(s => s.CreateArticleAsync(It.IsAny<CreateArticleDTO>()))
+            _mockService.Setup(s => s.CreateArticleAsync(It.IsAny<CreateArticleDTO>()))
                        .ReturnsAsync(Guid.Empty);
-
-            var controller = new ArticlesController(mockService.Object, mockLogger.Object);
 
             var article = new CreateArticleDTO
             {
@@ -216,7 +183,7 @@ namespace Ratbags.Articles.API.Tests
             };
 
             // act 
-            var result = await controller.Post(article);
+            var result = await _controller.Post(article);
 
             // assert
             Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
@@ -225,13 +192,8 @@ namespace Ratbags.Articles.API.Tests
         public async Task CreateArticle_Exception()
         {
             // arrange
-            var mockService = new Mock<IArticlesService>();
-            var mockLogger = new Mock<ILogger<ArticlesController>>();
-
-            mockService.Setup(s => s.CreateArticleAsync(It.IsAny<CreateArticleDTO>()))
+            _mockService.Setup(s => s.CreateArticleAsync(It.IsAny<CreateArticleDTO>()))
                 .ThrowsAsync(new Exception("test exception"));
-
-            var controller = new ArticlesController(mockService.Object, mockLogger.Object);
 
             var article = new CreateArticleDTO
             {
@@ -241,7 +203,7 @@ namespace Ratbags.Articles.API.Tests
             };
 
             // act
-            var result = await controller.Post(article);
+            var result = await _controller.Post(article);
 
             // asert
             var statusCodeResult = result as ObjectResult;
@@ -257,13 +219,8 @@ namespace Ratbags.Articles.API.Tests
         public async Task UpdateArticle_NoContent()
         {
             // arrange
-            var mockService = new Mock<IArticlesService>();
-            var mockLogger = new Mock<ILogger<ArticlesController>>();
-
-            mockService.Setup(s=>s.UpdateArticleAsync(It.IsAny<ArticleDTO>()))
+            _mockService.Setup(s=>s.UpdateArticleAsync(It.IsAny<ArticleDTO>()))
                 .ReturnsAsync(true);
-
-            var controller = new ArticlesController(mockService.Object, mockLogger.Object);
 
             var article = new ArticleDTO
             {
@@ -273,7 +230,7 @@ namespace Ratbags.Articles.API.Tests
             };
 
             // act
-            var result = await controller.Put(article);
+            var result = await _controller.Put(article);
 
             // assert
             Assert.That(result, Is.TypeOf<NoContentResult>());
@@ -283,13 +240,8 @@ namespace Ratbags.Articles.API.Tests
         public async Task UpdateArticle_NotFound()
         {
             // arrange
-            var mockService = new Mock<IArticlesService>();
-            var mockLogger = new Mock<ILogger<ArticlesController>>();
-
-            mockService.Setup(s => s.UpdateArticleAsync(It.IsAny<ArticleDTO>()))
+            _mockService.Setup(s => s.UpdateArticleAsync(It.IsAny<ArticleDTO>()))
                 .ReturnsAsync(false);
-
-            var controller = new ArticlesController(mockService.Object, mockLogger.Object);
 
             var article = new ArticleDTO
             {
@@ -299,7 +251,7 @@ namespace Ratbags.Articles.API.Tests
             };
 
             // act
-            var result = await controller.Put(article);
+            var result = await _controller.Put(article);
 
             // assert
             Assert.That(result, Is.TypeOf<NotFoundResult>());
@@ -308,13 +260,8 @@ namespace Ratbags.Articles.API.Tests
         public async Task UpdateArticle_Exception()
         {
             // arrange
-            var mockService = new Mock<IArticlesService>();
-            var mockLogger = new Mock<ILogger<ArticlesController>>();
-
-            mockService.Setup(s => s.UpdateArticleAsync(It.IsAny<ArticleDTO>()))
+            _mockService.Setup(s => s.UpdateArticleAsync(It.IsAny<ArticleDTO>()))
                 .ThrowsAsync(new Exception("test exception"));
-
-            var controller = new ArticlesController(mockService.Object, mockLogger.Object);
 
             var article = new ArticleDTO
             {
@@ -324,7 +271,7 @@ namespace Ratbags.Articles.API.Tests
             };
 
             // act
-            var result = await controller.Put(article);
+            var result = await _controller.Put(article);
 
             // assert
             var statusCodeResult = result as ObjectResult;
