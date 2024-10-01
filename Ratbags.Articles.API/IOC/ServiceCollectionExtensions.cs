@@ -9,8 +9,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddCustomServices(this IServiceCollection services)
     {
         // Register services
-        services.AddScoped<IArticlesService, ArticlesService>();
-        services.AddScoped<IArticlesRepository, ArticlesRepository>();
+        services.AddScoped<IService, Service>();
+        services.AddScoped<IRepository, ArticlesRepository>();
 
         return services;
     }

@@ -7,22 +7,22 @@ using Ratbags.Shared.DTOs.Events.Events.CommentsRequest;
 
 namespace Ratbags.Articles.API.Services;
 
-public class ArticlesService : IArticlesService
+public class Service : IService
 {
-    private readonly IArticlesRepository _repository;
+    private readonly IRepository _repository;
     private readonly IRequestClient<CommentsForArticleRequest> _massTrasitClient;
-    private readonly ILogger<ArticlesService> _logger;
+    private readonly ILogger<Service> _logger;
 
-    public ArticlesService(IArticlesRepository repository,
+    public Service(IRepository repository,
         IRequestClient<CommentsForArticleRequest> massTrasitClient,
-        ILogger<ArticlesService> logger)
+        ILogger<Service> logger)
     {
         _repository = repository;
         _massTrasitClient = massTrasitClient;
         _logger = logger;
     }
 
-    public async Task<Guid> CreateArticleAsync(CreateArticleDTO createArticleDTO)
+    public async Task<Guid> CreateAsync(CreateArticleDTO createArticleDTO)
     {
         var newArticle = new Article
         {
@@ -34,7 +34,7 @@ public class ArticlesService : IArticlesService
 
         try
         {
-            var articleId = await _repository.CreateArticleAsync(newArticle);
+            var articleId = await _repository.CreateAsync(newArticle);
 
             return articleId;
         }
@@ -45,30 +45,30 @@ public class ArticlesService : IArticlesService
         }
     }
 
-    public async Task<bool> DeleteArticleAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id)
     {
-        var article = await _repository.GetArticleByIdAsync(id);
+        var article = await _repository.GetByIdAsync(id);
 
         if (article == null)
         {
-            return false;  // Indicate that the article wasn't found
+            return false;
         }
 
         try
         {
-            await _repository.DeleteArticleAsync(id);
+            await _repository.DeleteAsync(id);
             return true;
         }
         catch (DbUpdateException e)
         {
-            _logger.LogError($"Error inserting article {id}: {e.Message}");
+            _logger.LogError($"Error deleting article {id}: {e.Message}");
             throw;
         }
     }
 
-    public async Task<IEnumerable<ArticleDTO>> GetAllArticlesAsync()
+    public async Task<IEnumerable<ArticleDTO>> GetAsync()
     {
-        var articles = await _repository.GetAllArticlesAsync();
+        var articles = await _repository.GetAsync();
 
         var articlesDTO = articles.Select(
             article => new ArticleDTO
@@ -86,9 +86,9 @@ public class ArticlesService : IArticlesService
         return articlesDTO.OrderByDescending(x => x.Created);
     }
 
-    public async Task<ArticleDTO?> GetArticleByIdAsync(Guid id)
+    public async Task<ArticleDTO?> GetByIdAsync(Guid id)
     {
-        var article = await _repository.GetArticleByIdAsync(id);
+        var article = await _repository.GetByIdAsync(id);
 
         if (article != null)
         {
@@ -113,9 +113,9 @@ public class ArticlesService : IArticlesService
         return null;
     }
 
-    public async Task<bool> UpdateArticleAsync(ArticleDTO articleDTO)
+    public async Task<bool> UpdateAsync(ArticleDTO articleDTO)
     {
-        var existingArticle = await _repository.GetArticleByIdAsync(articleDTO.Id);
+        var existingArticle = await _repository.GetByIdAsync(articleDTO.Id);
 
         if (existingArticle == null)
         {
@@ -128,7 +128,7 @@ public class ArticlesService : IArticlesService
 
         try
         {
-            await _repository.UpdateArticleAsync(existingArticle);
+            await _repository.UpdateAsync(existingArticle);
             return true;
         }
         catch (DbUpdateException e)
