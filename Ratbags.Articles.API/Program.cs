@@ -92,12 +92,11 @@ if (app.Environment.IsDevelopment())
 
 if (!app.Environment.IsDevelopment())
 {
-    // This middleware will handle errors in production
-    app.UseExceptionHandler("/error");  // Replace "/error" with a global error endpoint if you have one
+    // production errors
+    app.UseExceptionHandler("/error");  // need an error page
 }
 else
 {
-    // In development, show detailed exceptions on the page
     app.UseDeveloperExceptionPage();
 }
 
