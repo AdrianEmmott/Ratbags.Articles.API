@@ -30,12 +30,7 @@ public class ArticlesController : ControllerBase
         {
             var result = await _service.DeleteArticleAsync(id);
 
-            if (!result)
-            {
-                return NotFound(); // no article exists
-            }
-
-            return NoContent();
+            return result ? NoContent() : NotFound();
         }
         catch (Exception e)
         {
@@ -46,24 +41,18 @@ public class ArticlesController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(typeof(List<ArticleDTO>), (int)HttpStatusCode.OK)]
-    [SwaggerOperation(Summary = "Gets all articles", Description = "Retrieves a list of all articles")]
+    [SwaggerOperation(Summary = "Gets all articles", Description = "Returns a list of all articles or an empty list if no data")]
     public async Task<IActionResult> Get()
     {
         var result = await _service.GetAllArticlesAsync();
 
-        if (result != null)
-        {
-            return Ok(result);
-        }
-
-        return Ok(new List<ArticleDTO>());
+        return Ok(result);
     }
 
     [HttpGet("{id}")]
-    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ArticleDTO), (int)HttpStatusCode.OK)]
-    [SwaggerOperation(Summary = "Gets an article by id", Description = "Retrieves a specific article by its id")]
+    [SwaggerOperation(Summary = "Gets an article by id", Description = "Returns a specific article by its id")]
     public async Task<IActionResult> Get(Guid id)
     {
         if (id == Guid.Empty)
@@ -72,13 +61,8 @@ public class ArticlesController : ControllerBase
         }
 
         var result = await _service.GetArticleByIdAsync(id);
-
-        if (result != null)
-        {
-            return Ok(result);
-        }
-
-        return NotFound();
+        
+        return result == null ? NotFound() : Ok(result);
     }
 
     [HttpPost]
@@ -93,6 +77,7 @@ public class ArticlesController : ControllerBase
 
             if (articleId != Guid.Empty)
             {
+                // set location header
                 return CreatedAtAction(nameof(Get), new { id = articleId }, articleId);
             }
 
@@ -101,7 +86,7 @@ public class ArticlesController : ControllerBase
         catch (Exception e)
         {
             _logger.LogError($"Error creating article: {e.Message}");
-            return StatusCode(500, "An error occurred while creating the article");
+            return StatusCode(500, $"An error occurred while creating the article");
         }
     }
 
@@ -116,12 +101,7 @@ public class ArticlesController : ControllerBase
         {
             var result = await _service.UpdateArticleAsync(articleDTO);
 
-            if (!result)
-            {
-                return NotFound();
-            }
-
-            return NoContent();
+            return result ? NoContent() : NotFound();
         }
         catch (Exception e)
         {

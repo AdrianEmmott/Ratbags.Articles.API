@@ -37,7 +37,7 @@ public class ArticlesRepository : IArticlesRepository
     public async Task<IEnumerable<Article>> GetAllArticlesAsync()
     {
         _logger.LogInformation($"get all articles");
-        return await _context.Articles.ToListAsync();
+        return await _context.Articles.Where(x => x.Published == DateTime.Now.AddDays(1)).ToListAsync();
     }
 
     public async Task<Article?> GetArticleByIdAsync(Guid id)

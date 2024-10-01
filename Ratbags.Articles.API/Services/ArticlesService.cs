@@ -32,9 +32,17 @@ public class ArticlesService : IArticlesService
             Created = createArticleDTO.Created
         };
 
-        var articleId = await _repository.CreateArticleAsync(newArticle);
+        try
+        {
+            var articleId = await _repository.CreateArticleAsync(newArticle);
 
-        return articleId;
+            return articleId;
+        }
+        catch (DbUpdateException e)
+        {
+            _logger.LogError($"Error inserting article: {e.Message}");
+            throw;
+        }
     }
 
     public async Task<bool> DeleteArticleAsync(Guid id)
@@ -46,8 +54,16 @@ public class ArticlesService : IArticlesService
             return false;  // Indicate that the article wasn't found
         }
 
-        await _repository.DeleteArticleAsync(id);
-        return true;
+        try
+        {
+            await _repository.DeleteArticleAsync(id);
+            return true;
+        }
+        catch (DbUpdateException e)
+        {
+            _logger.LogError($"Error inserting article {id}: {e.Message}");
+            throw;
+        }
     }
 
     public async Task<IEnumerable<ArticleDTO>> GetAllArticlesAsync()

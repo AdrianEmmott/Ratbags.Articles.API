@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Ratbags.Articles.API.Controllers;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Shared.DTOs.Events.DTOs.Articles;
+using System.Net;
 
 namespace Ratbags.Articles.API.Tests
 {
@@ -72,7 +73,7 @@ namespace Ratbags.Articles.API.Tests
             // asert
             var statusCodeResult = result as ObjectResult;
             Assert.That(statusCodeResult, Is.Not.Null);
-            Assert.That(statusCodeResult.StatusCode, Is.EqualTo(500));
+            Assert.That(statusCodeResult.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
             Assert.That(statusCodeResult.Value, Is.EqualTo("An error occurred while deleting the article"));
         }
 
@@ -174,7 +175,7 @@ namespace Ratbags.Articles.API.Tests
 
             var createArticleDTO = new CreateArticleDTO
             {
-                Title = "An article title",
+                Title = string.Empty,
                 Content = "<p>lorem ipsum</p>",
                 Created = DateTime.Now,
             };
@@ -183,7 +184,9 @@ namespace Ratbags.Articles.API.Tests
             var result = await _controller.Post(createArticleDTO);
 
             // assert
-            Assert.That(result, Is.TypeOf<BadRequestObjectResult>());
+            var badRequestResult = result as BadRequestObjectResult;
+            Assert.That(badRequestResult, Is.Not.Null);
+            Assert.That(badRequestResult.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
         }
         [Test]
         public async Task CreateArticle_Exception()
@@ -205,7 +208,7 @@ namespace Ratbags.Articles.API.Tests
             // asert
             var statusCodeResult = result as ObjectResult;
             Assert.That(statusCodeResult, Is.Not.Null);
-            Assert.That(statusCodeResult.StatusCode, Is.EqualTo(500));
+            Assert.That(statusCodeResult.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
             Assert.That(statusCodeResult.Value, Is.EqualTo("An error occurred while creating the article"));
         }
 
@@ -271,7 +274,7 @@ namespace Ratbags.Articles.API.Tests
             // assert
             var statusCodeResult = result as ObjectResult;
             Assert.That(statusCodeResult, Is.Not.Null);
-            Assert.That(statusCodeResult.StatusCode, Is.EqualTo(500));
+            Assert.That(statusCodeResult.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
             Assert.That(statusCodeResult.Value, Is.EqualTo("An error occurred while updating the article"));
         }
     }

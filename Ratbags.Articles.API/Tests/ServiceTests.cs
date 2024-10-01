@@ -60,7 +60,11 @@ namespace Ratbags.Articles.API.Tests
         {
             // arrange
             var articleId = Guid.NewGuid();
-            var article = new Article { Id = articleId, Title = "Test Article" };
+            var article = new Article 
+            {
+                Id = articleId, 
+                Title = "Test Article" 
+            };
 
             _mockRepository.Setup(r => r.GetArticleByIdAsync(articleId))
                            .ReturnsAsync(article);
@@ -98,11 +102,22 @@ namespace Ratbags.Articles.API.Tests
         {
             // arrange
             var articleId = Guid.NewGuid();
-            var article = new Article { Id = articleId, Title = "test title", Content = "test content" };
+            var article = new Article 
+            { 
+                Id = articleId, 
+                Title = "test title", 
+                Content = "test content" 
+            };
 
             var commentsResponse = new CommentsForArticleResponse
             {
-                Comments = new List<CommentDTO> { new CommentDTO { Content = "test comment" } }
+                Comments = new List<CommentDTO> 
+                {
+                    new CommentDTO 
+                    { 
+                        Content = "test comment" 
+                    } 
+                }
             };
 
             _mockRepository.Setup(r => r.GetArticleByIdAsync(articleId))
@@ -202,6 +217,7 @@ namespace Ratbags.Articles.API.Tests
             // arrange
             var articleId = Guid.NewGuid();
 
+            // article in db
             var existingArticle = new Article
             {
                 Id = articleId,
@@ -211,12 +227,11 @@ namespace Ratbags.Articles.API.Tests
                 Updated = DateTime.Now.AddDays(-1)
             };
 
-            
-            // updating
+            // update article dto
             var  articleDTO = new ArticleDTO
             {
                 Id = articleId,
-                Title = "An article title",
+                Title = "New article title",
                 Content = "<p>lorem ipsum</p>",
                 Created = DateTime.Now,
             };
@@ -240,14 +255,7 @@ namespace Ratbags.Articles.API.Tests
             // arrange
             var articleId = Guid.NewGuid();
 
-            var articleDTO = new ArticleDTO
-            {
-                Id = articleId,
-                Title = "New Title",
-                Content = "<p>lorem ipsum</p>",
-                Created = DateTime.Now
-            };
-
+            // article in db
             var existingArticle = new Article
             {
                 Id = articleId,
@@ -255,6 +263,15 @@ namespace Ratbags.Articles.API.Tests
                 Content = "Old Content",
                 Created = DateTime.Now.AddDays(-2),
                 Updated = DateTime.Now.AddDays(-1)
+            };
+
+            // update article dto
+            var articleDTO = new ArticleDTO
+            {
+                Id = articleId,
+                Title = "New Title",
+                Content = "<p>lorem ipsum</p>",
+                Created = DateTime.Now
             };
 
             _mockRepository.Setup(r => r.GetArticleByIdAsync(articleId))
