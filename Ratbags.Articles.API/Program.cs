@@ -79,7 +79,6 @@ builder.Services.AddMassTransit(x =>
 
 var app = builder.Build();
 
-// cors
 app.UseCors("AllowSpecificOrigin");
 
 // config http request pipeline
@@ -90,10 +89,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// errors
 if (!app.Environment.IsDevelopment())
 {
     // production errors
-    app.UseExceptionHandler("/error");  // need an error page
+    app.UseExceptionHandler("/error");  // needs endpoint
 }
 else
 {
