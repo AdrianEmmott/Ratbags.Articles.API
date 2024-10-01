@@ -27,7 +27,7 @@ namespace Ratbags.Articles.API.Tests
 
         // DELETE
         [Test]
-        public async Task DeleteArticle_NoContent()
+        public async Task Delete_NoContent()
         {
             // arrange
             var id = Guid.NewGuid();
@@ -43,7 +43,7 @@ namespace Ratbags.Articles.API.Tests
         }
 
         [Test]
-        public async Task DeleteArticle_NotFound()
+        public async Task Delete_NotFound()
         {
             // arrange
             var id = Guid.NewGuid();
@@ -59,7 +59,7 @@ namespace Ratbags.Articles.API.Tests
         }
 
         [Test]
-        public async Task DeleteArticle_Exception()
+        public async Task Delete_Exception()
         {
             // arrange
             var id = Guid.Empty;
@@ -73,14 +73,18 @@ namespace Ratbags.Articles.API.Tests
             // assert
             var statusCodeResult = result as ObjectResult;
             Assert.That(statusCodeResult, Is.Not.Null);
-            Assert.That(statusCodeResult.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
-            Assert.That(statusCodeResult.Value, Is.EqualTo("An error occurred while deleting the article"));
+
+            Assert.That(statusCodeResult.StatusCode, 
+                Is.EqualTo((int)HttpStatusCode.InternalServerError));
+
+            Assert.That(statusCodeResult.Value, 
+                Is.EqualTo("An error occurred while deleting the article"));
         }
 
 
         // GET/{ID}
         [Test]
-        public async Task GetArticle_Ok()
+        public async Task GetById_Ok()
         {
             // arrange
             var dto = new ArticleDTO
@@ -101,7 +105,7 @@ namespace Ratbags.Articles.API.Tests
         }
 
         [Test]
-        public async Task GetArticle_NotFound()
+        public async Task GetById_NotFound()
         {
             // arrange
             var id = Guid.NewGuid();
@@ -117,7 +121,7 @@ namespace Ratbags.Articles.API.Tests
         }
 
         [Test]
-        public async Task GetArticle_BadRequest()
+        public async Task GetById_BadRequest()
         {
             // arrange
             _mockService.Setup(s => s.GetByIdAsync(It.IsAny<Guid>()))
@@ -133,7 +137,7 @@ namespace Ratbags.Articles.API.Tests
 
         // GET
         [Test]
-        public async Task GetArticles_Ok()
+        public async Task Get_Ok()
         {
             // arrange
             _mockService.Setup(s => s.GetAsync())
@@ -149,28 +153,41 @@ namespace Ratbags.Articles.API.Tests
 
         // POST
         [Test]
-        public async Task CreateArticle_NoContent()
+        public async Task Post_Created()
         {
             // arrange
-            _mockService.Setup(s => s.CreateAsync(It.IsAny<CreateArticleDTO>()))
-                       .ReturnsAsync(Guid.NewGuid());
-
             var dto = new CreateArticleDTO
             {
-                Title = "An article title",
-                Content = "<p>lorem ipsum</p>",
-                Created = DateTime.Now,
+                Title = "New Title",
+                Content = "New Comment"
             };
 
-            // act 
+            var newId = Guid.NewGuid();
+
+            _mockService.Setup(s => s.CreateAsync(It.IsAny<CreateArticleDTO>()))
+                .ReturnsAsync(newId);
+
+            // act
             var result = await _controller.Post(dto);
 
             // assert
             Assert.That(result, Is.TypeOf<CreatedAtActionResult>());
+            var createdResult = result as CreatedAtActionResult;
+
+            // assert action name correct
+            Assert.That(createdResult.ActionName,
+                Is.EqualTo(nameof(ArticlesController.Get)));
+
+            // assert route values correct id
+            Assert.That(createdResult.RouteValues.ContainsKey("id"));
+            Assert.That(createdResult.RouteValues["id"], Is.EqualTo(newId));
+
+            // assert returned value is the new id
+            Assert.That(createdResult.Value, Is.EqualTo(newId));
         }
 
         [Test]
-        public async Task CreateArticle_BadRequest()
+        public async Task Post_BadRequest()
         {
             // arrange
             _mockService.Setup(s => s.CreateAsync(It.IsAny<CreateArticleDTO>()))
@@ -193,7 +210,7 @@ namespace Ratbags.Articles.API.Tests
         }
 
         [Test]
-        public async Task CreateArticle_Exception()
+        public async Task Post_Exception()
         {
             // arrange
             _mockService.Setup(s => s.CreateAsync(It.IsAny<CreateArticleDTO>()))
@@ -264,6 +281,7 @@ namespace Ratbags.Articles.API.Tests
             Assert.That(result, Is.TypeOf<NotFoundResult>());
         }
 
+        [Test]
         public async Task Put_Exception()
         {
             // arrange
@@ -283,8 +301,12 @@ namespace Ratbags.Articles.API.Tests
             // assert
             var statusCodeResult = result as ObjectResult;
             Assert.That(statusCodeResult, Is.Not.Null);
-            Assert.That(statusCodeResult.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
-            Assert.That(statusCodeResult.Value, Is.EqualTo("An error occurred while updating the article"));
+
+            Assert.That(statusCodeResult.StatusCode, 
+                Is.EqualTo((int)HttpStatusCode.InternalServerError));
+
+            Assert.That(statusCodeResult.Value, 
+                Is.EqualTo("An error occurred while updating the article"));
         }
     }
 }
