@@ -4,9 +4,9 @@ using Ratbags.Articles.API.Services;
 
 namespace Ratbags.Articles.API.IOC;
 
-public static class ServiceCollectionExtensions
+public static class DIServiceExtension
 {
-    public static IServiceCollection AddCustomServices(this IServiceCollection services)
+    public static IServiceCollection AddDIServiceExtension(this IServiceCollection services)
     {
         // Register services
         services.AddScoped<IService, Service>();

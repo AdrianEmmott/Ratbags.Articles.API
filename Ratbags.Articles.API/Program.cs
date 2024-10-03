@@ -2,6 +2,7 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Ratbags.Articles.API.IOC;
 using Ratbags.Articles.API.Models;
+using Ratbags.Articles.API.ServiceExtensions;
 using Ratbags.Shared.DTOs.Events.AppSettingsBase;
 using Ratbags.Shared.DTOs.Events.Events.CommentsRequest;
 
@@ -51,31 +52,8 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddCustomServices();
-
-// mass transit
-builder.Services.AddMassTransit(x =>
-{
-    x.UsingRabbitMq((context, cfg) =>
-    {
-        cfg.Host($"rabbitmq://{appSettings.Messaging.Hostname}/{appSettings.Messaging.VirtualHost}", h =>
-        {
-            h.Username(appSettings.Messaging.Username);
-            h.Password(appSettings.Messaging.Password);
-        });
-
-        // ensure messages sent to correct exchange and routing key
-        cfg.Message<CommentsForArticleRequest>(c =>
-        {
-            c.SetEntityName("articles.comments.exchange"); // set exchange name for this message type
-        });
-
-        cfg.Send<CommentsForArticleRequest>(x =>
-        {
-            x.UseRoutingKeyFormatter(context => "request");
-        });
-    });
-});
+builder.Services.AddDIServiceExtension();
+builder.Services.AddMassTransitWithRabbitMqServiceExtension(appSettings);
 
 var app = builder.Build();
 
