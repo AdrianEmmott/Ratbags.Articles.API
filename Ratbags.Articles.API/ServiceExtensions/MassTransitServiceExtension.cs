@@ -18,17 +18,9 @@ namespace Ratbags.Articles.API.ServiceExtensions
                         h.Password(appSettings.Messaging.Password);
                     });
 
-                    // ensure messages sent to correct exchange and routing key
                     cfg.Message<CommentsForArticleRequest>(c =>
                     {
-                        c.SetEntityName("articles.comments.exchange"); // set exchange name for this message type
-                    });
-
-                    // give the internal bus a meaningful name
-                    cfg.ReceiveEndpoint("articles_comments_api_internal_bus_endpoint", q =>
-                    {
-                        // disable the auto-creation of the default queue exchange
-                        q.ConfigureConsumeTopology = false; // prevents creating an exchange with the same name as the queue
+                        c.SetEntityName("articles.comments"); // set exchange name for this message type
                     });
 
                     // spare code! pointless but keep for now in case you move away from request/response

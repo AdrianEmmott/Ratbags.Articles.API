@@ -92,22 +92,31 @@ public class Service : IService
 
         if (article != null)
         {
-            var response = await _massTrasitClient
-                .GetResponse<CommentsForArticleResponse>
-                (new CommentsForArticleRequest {
-                    ArticleId = id
-                });
-
-            return new ArticleDTO
+            try
             {
-                Id = article.Id,
-                Title = article.Title,
-                Content = article.Content,
-                Created = article.Created,
-                Updated = article.Updated,
-                Published = article.Published,
-                Comments = response.Message.Comments
-            };
+                var response = await _massTrasitClient
+                                .GetResponse<CommentsForArticleResponse>
+                                (new CommentsForArticleRequest
+                                {
+                                    ArticleId = id
+                                });
+
+                return new ArticleDTO
+                {
+                    Id = article.Id,
+                    Title = article.Title,
+                    Content = article.Content,
+                    Created = article.Created,
+                    Updated = article.Updated,
+                    Published = article.Published,
+                    Comments = response.Message.Comments
+                };
+            }
+            catch (MassTransitException e)
+            {
+                _logger.LogError($"Error sending comments request for article {id}: {e.Message}");
+                throw;
+            }
         }
 
         return null;

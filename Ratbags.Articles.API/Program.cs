@@ -1,10 +1,8 @@
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Ratbags.Articles.API.IOC;
 using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.ServiceExtensions;
 using Ratbags.Shared.DTOs.Events.AppSettingsBase;
-using Ratbags.Shared.DTOs.Events.Events.CommentsRequest;
 
 var builder = WebApplication.CreateBuilder(args);
 
