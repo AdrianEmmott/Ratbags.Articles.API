@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Shared.DTOs.Events.DTOs.Articles;
 using Swashbuckle.AspNetCore.Annotations;
@@ -19,6 +20,7 @@ public class ArticlesController : ControllerBase
         _logger = logger;
     }
 
+    [Authorize]
     [HttpDelete("{id}")]
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -45,10 +47,12 @@ public class ArticlesController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(List<ArticleDTO>), (int)HttpStatusCode.OK)]
     [SwaggerOperation(Summary = "Gets all articles", 
-        Description = "Returns a list of all articles or an empty list if no data")]
+        Description = "Returns a list of all articles or an empty list")]
     public async Task<IActionResult> Get()
     {
+        // debug - simulate slow response
         var result = await _service.GetAsync();
+        System.Threading.Thread.Sleep(200);
 
         return Ok(result);
     }
@@ -70,7 +74,8 @@ public class ArticlesController : ControllerBase
         return result == null ? NotFound() : Ok(result);
     }
 
-    [HttpPost]
+    [Authorize]
+    [HttpPost]    
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(Guid), (int)HttpStatusCode.Created)]
     [SwaggerOperation(Summary = "Creates an article", 
@@ -98,6 +103,7 @@ public class ArticlesController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPut]
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]

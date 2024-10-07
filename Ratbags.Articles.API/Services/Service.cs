@@ -68,6 +68,7 @@ public class Service : IService
 
     public async Task<IEnumerable<ArticleDTO>> GetAsync()
     {
+        _logger.LogInformation("getting articles...");
         var articles = await _repository.GetAsync();
 
         var articlesDTO = articles.Select(

@@ -2,12 +2,16 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# github pat
+# github pat for packages
 ARG GITHUB_TOKEN
 ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 
-# make sure it gets picked up...
+ARG DB_CONNECTION_STRING
+ENV DB_CONNECTION_STRING=${DB_CONNECTION_STRING}
+
+# make sure vars get picked up...
 RUN echo "ARTICLES GITHUB_TOKEN: $GITHUB_TOKEN"
+RUN echo "ARTICLES DB_CONNECTION_STRING: $DB_CONNECTION_STRING"
 
 # copy nuget.config and replace 'myPAT' with actual pat (using sed insead of powershell for image size)
 COPY nuget.config .

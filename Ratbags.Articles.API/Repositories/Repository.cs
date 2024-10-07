@@ -33,6 +33,7 @@ public class ArticlesRepository : IRepository
 
     public async Task<IEnumerable<Article>> GetAsync()
     {
+        _logger.LogInformation($"database cxn: {_context.Database.GetConnectionString()}");
         return await _context.Articles.ToListAsync();
     }
 

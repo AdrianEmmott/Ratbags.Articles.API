@@ -1,8 +1,11 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Ratbags.Articles.API.IOC;
 using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.ServiceExtensions;
 using Ratbags.Shared.DTOs.Events.AppSettingsBase;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +18,7 @@ if (builder.Environment.IsDevelopment())
 builder.Services.Configure<AppSettingsBase>(builder.Configuration);
 var appSettings = builder.Configuration.Get<AppSettingsBase>() ?? throw new Exception("Appsettings missing");
 
-// config kestrel for https on 5001
+// config kestrel for https
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
     serverOptions.ListenAnyIP(5078); // HTTP
@@ -32,14 +35,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
         builder => builder
-            //.WithOrigins("https://localhost:7117")    // ocelot - vs
             .WithOrigins("https://localhost:5001")      // ocelot - docker
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());
 });
 
-// add services to container
+// add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -52,6 +54,26 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddDIServiceExtension();
 builder.Services.AddMassTransitWithRabbitMqServiceExtension(appSettings);
+
+// TODO breakout
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["JWT:Issuer"],
+        ValidAudience = builder.Configuration["JWT:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"])) // TODO update appsettings base
+    };
+});
 
 var app = builder.Build();
 
@@ -69,7 +91,7 @@ if (app.Environment.IsDevelopment())
 if (!app.Environment.IsDevelopment())
 {
     // production errors
-    app.UseExceptionHandler("/error");  // needs endpoint
+    app.UseExceptionHandler("/error");  // TODO needs endpoint
 }
 else
 {
@@ -77,6 +99,7 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
