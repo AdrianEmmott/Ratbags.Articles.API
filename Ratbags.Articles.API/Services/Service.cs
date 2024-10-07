@@ -2,8 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Articles.API.Models;
-using Ratbags.Shared.DTOs.Events.DTOs.Articles;
-using Ratbags.Shared.DTOs.Events.Events.CommentsRequest;
+using Ratbags.Core.DTOs.Articles;
+using Ratbags.Core.Events.CommentsRequest;
 
 namespace Ratbags.Articles.API.Services;
 

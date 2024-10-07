@@ -2,7 +2,7 @@
 using Ratbags.Articles.API.Repositories;
 using Ratbags.Articles.API.Services;
 
-namespace Ratbags.Articles.API.IOC;
+namespace Ratbags.Articles.API.ServiceExtensions;
 
 public static class DIServiceExtension
 {

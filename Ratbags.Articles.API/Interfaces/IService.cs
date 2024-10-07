@@ -1,4 +1,4 @@
-﻿using Ratbags.Shared.DTOs.Events.DTOs.Articles;
+﻿using Ratbags.Core.DTOs.Articles;
 
 namespace Ratbags.Articles.API.Interfaces;
 

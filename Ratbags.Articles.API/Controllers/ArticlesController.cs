@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ratbags.Articles.API.Interfaces;
-using Ratbags.Shared.DTOs.Events.DTOs.Articles;
+using Ratbags.Core.DTOs.Articles;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
 
