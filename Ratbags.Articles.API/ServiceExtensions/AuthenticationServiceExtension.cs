@@ -23,7 +23,7 @@ public static class AuthenticationServiceExtension
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = settings.JWT.Issuer,
-                ValidAudience = settings.JWT.AudienceType,
+                ValidAudience = settings.JWT.Audience,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.JWT.Secret))
             };
         });
