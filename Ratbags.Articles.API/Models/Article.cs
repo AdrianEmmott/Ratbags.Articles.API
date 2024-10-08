@@ -1,14 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Ratbags.Articles.API.Models;
 
+[Table("Articles")]
 public partial class Article
 {
+    [Key]
     public Guid Id { get; set; }
 
+    [Required]
     public string Title { get; set; } = null!;
 
+    [Required]
     public string Content { get; set; } = null!;
 
     public DateTime Created { get; set; }
@@ -18,10 +22,4 @@ public partial class Article
     public DateTime? Published { get; set; }
 
     public string? ImageUrl { get; set; }
-
-    public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
-
-    public virtual ICollection<Author> Authors { get; set; } = new List<Author>();
-
-    public virtual ICollection<Tag> Tags { get; set; } = new List<Tag>();
 }
