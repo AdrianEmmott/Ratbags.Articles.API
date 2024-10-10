@@ -14,14 +14,21 @@ if (builder.Environment.IsDevelopment())
 builder.Services.Configure<AppSettingsBase>(builder.Configuration);
 var appSettings = builder.Configuration.Get<AppSettingsBase>() ?? throw new Exception("Appsettings missing");
 
-// config kestrel for https
+var certificatePath = string.Empty;
+var certificateKeyPath = string.Empty;
+
+// are we in docker?
+var isDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+
+certificatePath = Path.Combine(appSettings.Certificate.Path, appSettings.Certificate.Name);
+
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    serverOptions.ListenAnyIP(5078); // HTTP
-    serverOptions.ListenAnyIP(7159, listenOptions =>
+    serverOptions.ListenAnyIP(Convert.ToInt32(appSettings.Ports.Http));
+    serverOptions.ListenAnyIP(Convert.ToInt32(appSettings.Ports.Https), listenOptions =>
     {
         listenOptions.UseHttps(
-            appSettings.Certificate.Name,
+            certificatePath,
             appSettings.Certificate.Password);
     });
 });
@@ -31,7 +38,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
         builder => builder
-            .WithOrigins("https://localhost:5001") // ocelot - docker
+            .WithOrigins("https://localhost:5001") // ocelot
+            .WithOrigins("https://localhost:5000") // ocelot http
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());

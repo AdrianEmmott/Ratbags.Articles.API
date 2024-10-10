@@ -6,12 +6,8 @@ WORKDIR /src
 ARG GITHUB_TOKEN
 ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 
-ARG DB_CONNECTION_STRING
-ENV DB_CONNECTION_STRING=${DB_CONNECTION_STRING}
-
 # make sure vars get picked up...
 RUN echo "ARTICLES GITHUB_TOKEN: $GITHUB_TOKEN"
-RUN echo "ARTICLES DB_CONNECTION_STRING: $DB_CONNECTION_STRING"
 
 # copy nuget.config and replace 'myPAT' with actual pat (using sed insead of powershell for image size)
 COPY nuget.config .
@@ -41,7 +37,6 @@ RUN apt-get update && apt-get install -y ca-certificates
 
 # copy published app into image
 COPY --from=publish /app/publish .
-COPY aspnetapp.pfx /app/aspnetapp.pfx
 
 # run!
 ENTRYPOINT ["dotnet", "Ratbags.Articles.API.dll"]
