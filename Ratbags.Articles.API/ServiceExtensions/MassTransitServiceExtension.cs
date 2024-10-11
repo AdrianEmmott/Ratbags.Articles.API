@@ -6,7 +6,9 @@ namespace Ratbags.Articles.API.ServiceExtensions;
 
 public static class MassTransitServiceExtension
 {
-    public static IServiceCollection AddMassTransitWithRabbitMqServiceExtension(this IServiceCollection services, AppSettingsBase appSettings)
+    public static IServiceCollection AddMassTransitWithRabbitMqServiceExtension(
+        this IServiceCollection services, 
+        AppSettingsBase appSettings)
     {
         services.AddMassTransit(x =>
         {
