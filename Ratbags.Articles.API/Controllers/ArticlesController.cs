@@ -50,9 +50,10 @@ public class ArticlesController : ControllerBase
         Description = "Returns a list of all articles or an empty list")]
     public async Task<IActionResult> Get()
     {
-        // debug - simulate slow response
         var result = await _service.GetAsync();
-        System.Threading.Thread.Sleep(200);
+
+        // debug - simulate slow response
+        //System.Threading.Thread.Sleep(200);
 
         return Ok(result);
     }
