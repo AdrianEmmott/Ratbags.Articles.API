@@ -1,8 +1,8 @@
-﻿using Ratbags.Articles.API.Models;
+﻿using Ratbags.Articles.API.Models.DB;
 
 namespace Ratbags.Articles.API.Interfaces;
 
-public interface IRepository
+public interface IArticlesRepository
 {
     Task<Guid> CreateAsync(Article article);
     Task DeleteAsync(Guid id);

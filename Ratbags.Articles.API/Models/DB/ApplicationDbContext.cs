@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Ratbags.Articles.API.Models;
+namespace Ratbags.Articles.API.Models.DB;
 
 public partial class ApplicationDbContext : DbContext
 {

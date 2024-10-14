@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Ratbags.Articles.API.Models;
+using Ratbags.Articles.API.Models.DB;
 using Ratbags.Articles.API.ServiceExtensions;
 using Ratbags.Core.Settings;
 
@@ -12,7 +12,7 @@ if (builder.Environment.IsDevelopment())
 }
 
 builder.Services.Configure<AppSettingsBase>(builder.Configuration);
-var appSettings = builder.Configuration.Get<AppSettingsBase>() ?? throw new Exception("Appsettings missing");
+var appSettings = builder.Configuration.Get<AppSettingsBase>() ?? throw new Exception("Appsettings.json missing");
 
 var certificatePath = string.Empty;
 var certificateKeyPath = string.Empty;
@@ -33,7 +33,8 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
     });
 });
 
-// config cors
+// add services
+// cors
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
@@ -45,7 +46,6 @@ builder.Services.AddCors(options =>
             .AllowCredentials());
 });
 
-// add services
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -65,7 +65,6 @@ var app = builder.Build();
 
 app.UseCors("AllowSpecificOrigin");
 
-// config http request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();

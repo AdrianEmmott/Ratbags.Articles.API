@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Ratbags.Articles.API.Models;
+namespace Ratbags.Articles.API.Models.DB;
 
 [Table("Articles")]
 public partial class Article

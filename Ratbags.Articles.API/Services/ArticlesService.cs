@@ -1,35 +1,36 @@
 ﻿using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Ratbags.Articles.API.Interfaces;
-using Ratbags.Articles.API.Models;
+using Ratbags.Articles.API.Models.DB;
 using Ratbags.Core.DTOs.Articles;
 using Ratbags.Core.Events.CommentsRequest;
+using Ratbags.Core.Models.Articles;
 
 namespace Ratbags.Articles.API.Services;
 
-public class Service : IService
+public class ArticlesService : IArticlesService
 {
-    private readonly IRepository _repository;
+    private readonly IArticlesRepository _repository;
     private readonly IRequestClient<CommentsForArticleRequest> _massTrasitClient;
-    private readonly ILogger<Service> _logger;
+    private readonly ILogger<ArticlesService> _logger;
 
-    public Service(IRepository repository,
+    public ArticlesService(IArticlesRepository repository,
         IRequestClient<CommentsForArticleRequest> massTrasitClient,
-        ILogger<Service> logger)
+        ILogger<ArticlesService> logger)
     {
         _repository = repository;
         _massTrasitClient = massTrasitClient;
         _logger = logger;
     }
 
-    public async Task<Guid> CreateAsync(CreateArticleDTO createArticleDTO)
+    public async Task<Guid> CreateAsync(CreateArticleModel model)
     {
         var newArticle = new Article
         {
             Id = Guid.NewGuid(),
-            Title = createArticleDTO.Title,
-            Content = createArticleDTO.Content,
-            Created = createArticleDTO.Created
+            Title = model.Title,
+            Content = model.Content,
+            Created = model.Created
         };
 
         try
@@ -123,17 +124,17 @@ public class Service : IService
         return null;
     }
 
-    public async Task<bool> UpdateAsync(ArticleDTO articleDTO)
+    public async Task<bool> UpdateAsync(UpdateArticleModel model)
     {
-        var existingArticle = await _repository.GetByIdAsync(articleDTO.Id);
+        var existingArticle = await _repository.GetByIdAsync(model.Id);
 
         if (existingArticle == null)
         {
             return false;
         }
 
-        existingArticle.Title = articleDTO.Title;
-        existingArticle.Content = articleDTO.Content;
+        existingArticle.Title = model.Title;
+        existingArticle.Content = model.Content;
         existingArticle.Updated = DateTime.Now;
 
         try
@@ -143,7 +144,7 @@ public class Service : IService
         }
         catch (DbUpdateException e)
         {
-            _logger.LogError($"Error updating article {articleDTO.Id}: {e.Message}");
+            _logger.LogError($"Error updating article {model.Id}: {e.Message}");
             throw;
         }
     }

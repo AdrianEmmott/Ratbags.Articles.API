@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Ratbags.Articles.API.Controllers;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Core.DTOs.Articles;
+using Ratbags.Core.Models.Articles;
 using System.Net;
 
 namespace Ratbags.Articles.API.Tests;
@@ -12,7 +13,7 @@ namespace Ratbags.Articles.API.Tests;
 [TestFixture]
 public class ControllerTests
 {
-    private Mock<IService> _mockService;
+    private Mock<IArticlesService> _mockService;
     private Mock<ILogger<ArticlesController>> _mockLogger;
 
     private ArticlesController _controller;
@@ -20,7 +21,7 @@ public class ControllerTests
     [SetUp]
     public void SetUp()
     {
-        _mockService = new Mock<IService>();
+        _mockService = new Mock<IArticlesService>();
         _mockLogger = new Mock<ILogger<ArticlesController>>();
         _controller = new ArticlesController(_mockService.Object, _mockLogger.Object);
     }
@@ -156,7 +157,7 @@ public class ControllerTests
     public async Task Post_Created()
     {
         // arrange
-        var dto = new CreateArticleDTO
+        var model = new CreateArticleModel
         {
             Title = "New Title",
             Content = "New Comment"
@@ -164,11 +165,11 @@ public class ControllerTests
 
         var newId = Guid.NewGuid();
 
-        _mockService.Setup(s => s.CreateAsync(It.IsAny<CreateArticleDTO>()))
+        _mockService.Setup(s => s.CreateAsync(It.IsAny<CreateArticleModel>()))
             .ReturnsAsync(newId);
 
         // act
-        var result = await _controller.Post(dto);
+        var result = await _controller.Post(model);
 
         // assert
         Assert.That(result, Is.TypeOf<CreatedAtActionResult>());
@@ -190,10 +191,10 @@ public class ControllerTests
     public async Task Post_BadRequest()
     {
         // arrange
-        _mockService.Setup(s => s.CreateAsync(It.IsAny<CreateArticleDTO>()))
+        _mockService.Setup(s => s.CreateAsync(It.IsAny<CreateArticleModel>()))
                    .ReturnsAsync(Guid.Empty);
 
-        var dto = new CreateArticleDTO
+        var model = new CreateArticleModel
         {
             Title = string.Empty,
             Content = "<p>lorem ipsum</p>",
@@ -201,7 +202,7 @@ public class ControllerTests
         };
 
         // act 
-        var result = await _controller.Post(dto);
+        var result = await _controller.Post(model);
 
         // assert
         var badRequestResult = result as BadRequestObjectResult;
@@ -213,10 +214,10 @@ public class ControllerTests
     public async Task Post_Exception()
     {
         // arrange
-        _mockService.Setup(s => s.CreateAsync(It.IsAny<CreateArticleDTO>()))
+        _mockService.Setup(s => s.CreateAsync(It.IsAny<CreateArticleModel>()))
             .ThrowsAsync(new Exception("test exception"));
 
-        var dto = new CreateArticleDTO
+        var dto = new CreateArticleModel
         {
             Title = "An article title",
             Content = "<p>lorem ipsum</p>",
@@ -242,7 +243,7 @@ public class ControllerTests
     public async Task Put_NoContent()
     {
         // arrange
-        var dto = new ArticleDTO
+        var model = new UpdateArticleModel
         {
             Id = Guid.NewGuid(),
             Title = "An article title",
@@ -250,11 +251,11 @@ public class ControllerTests
             Created = DateTime.Now,
         };
 
-        _mockService.Setup(s => s.UpdateAsync(It.IsAny<ArticleDTO>()))
+        _mockService.Setup(s => s.UpdateAsync(It.IsAny<UpdateArticleModel>()))
             .ReturnsAsync(true);
 
         // act
-        var result = await _controller.Put(dto);
+        var result = await _controller.Put(model);
 
         // assert
         Assert.That(result, Is.TypeOf<NoContentResult>());
@@ -264,10 +265,10 @@ public class ControllerTests
     public async Task Put_NotFound()
     {
         // arrange
-        _mockService.Setup(s => s.UpdateAsync(It.IsAny<ArticleDTO>()))
+        _mockService.Setup(s => s.UpdateAsync(It.IsAny<UpdateArticleModel>()))
             .ReturnsAsync(false);
 
-        var dto = new ArticleDTO
+        var model = new UpdateArticleModel
         {
             Title = "An article title",
             Content = "<p>lorem ipsum</p>",
@@ -275,7 +276,7 @@ public class ControllerTests
         };
 
         // act
-        var result = await _controller.Put(dto);
+        var result = await _controller.Put(model);
 
         // assert
         Assert.That(result, Is.TypeOf<NotFoundResult>());
@@ -285,10 +286,10 @@ public class ControllerTests
     public async Task Put_Exception()
     {
         // arrange
-        _mockService.Setup(s => s.UpdateAsync(It.IsAny<ArticleDTO>()))
+        _mockService.Setup(s => s.UpdateAsync(It.IsAny<UpdateArticleModel>()))
             .ThrowsAsync(new Exception("test exception"));
 
-        var dto = new ArticleDTO
+        var model = new UpdateArticleModel
         {
             Title = "An article title",
             Content = "<p>lorem ipsum</p>",
@@ -296,7 +297,7 @@ public class ControllerTests
         };
 
         // act
-        var result = await _controller.Put(dto);
+        var result = await _controller.Put(model);
 
         // assert
         var statusCodeResult = result as ObjectResult;

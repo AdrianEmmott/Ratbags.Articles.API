@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Ratbags.Articles.API.Interfaces;
-using Ratbags.Articles.API.Models;
+using Ratbags.Articles.API.Models.DB;
 
 namespace Ratbags.Articles.API.Repositories;
 
-public class ArticlesRepository : IRepository
+public class ArticlesRepository : IArticlesRepository
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<ArticlesRepository> _logger;

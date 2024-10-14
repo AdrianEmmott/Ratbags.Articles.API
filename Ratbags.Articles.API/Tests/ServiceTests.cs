@@ -3,30 +3,30 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
 using Ratbags.Articles.API.Interfaces;
-using Ratbags.Articles.API.Models;
+using Ratbags.Articles.API.Models.DB;
 using Ratbags.Articles.API.Services;
 using Ratbags.Core.DTOs.Articles;
-using Ratbags.Core.DTOs.Articles.Comments;
 using Ratbags.Core.Events.CommentsRequest;
+using Ratbags.Core.Models.Articles;
 
 namespace Ratbags.Articles.API.Tests;
 
 public class ServiceTests
 {
-    private Mock<IRepository> _mockRepository;
+    private Mock<IArticlesRepository> _mockRepository;
     private Mock<IRequestClient<CommentsForArticleRequest>> _mockMassTransitClient;
-    private Mock<ILogger<Service>> _mockLogger;
+    private Mock<ILogger<ArticlesService>> _mockLogger;
 
-    private Service _service;
+    private ArticlesService _service;
 
     [SetUp]
     public void SetUp()
     {
-        _mockRepository = new Mock<IRepository>();
+        _mockRepository = new Mock<IArticlesRepository>();
         _mockMassTransitClient = new Mock<IRequestClient<CommentsForArticleRequest>>();
-        _mockLogger = new Mock<ILogger<Service>>();
+        _mockLogger = new Mock<ILogger<ArticlesService>>();
 
-        _service = new Service(_mockRepository.Object, _mockMassTransitClient.Object, _mockLogger.Object);
+        _service = new ArticlesService(_mockRepository.Object, _mockMassTransitClient.Object, _mockLogger.Object);
     }
 
     // CREATE
@@ -34,7 +34,7 @@ public class ServiceTests
     public async Task CreateArticleAsync_Success()
     {
         // arrange
-        var dto = new CreateArticleDTO
+        var model = new CreateArticleModel
         {
             Title = "An article title",
             Content = "<p>lorem ipsum</p>",
@@ -47,7 +47,7 @@ public class ServiceTests
                        .ReturnsAsync(articleId);
 
         // act
-        var result = await _service.CreateAsync(dto);
+        var result = await _service.CreateAsync(model);
 
         // assert
         Assert.That(result, Is.EqualTo(articleId));
@@ -58,7 +58,7 @@ public class ServiceTests
     public void CreateAsync_Exception()
     {
         // arrange
-        var dto = new CreateArticleDTO
+        var model = new CreateArticleModel
         {
             Title = "An article title",
             Content = "<p>lorem ipsum</p>",
@@ -69,7 +69,7 @@ public class ServiceTests
                        .ThrowsAsync(new DbUpdateException("Error creating article"));
 
         // play interrupted - act / assert
-        var ex = Assert.ThrowsAsync<DbUpdateException>(() => _service.CreateAsync(dto));
+        var ex = Assert.ThrowsAsync<DbUpdateException>(() => _service.CreateAsync(model));
         Assert.That(ex.Message, Is.EqualTo("Error creating article"));
     }
 
@@ -283,7 +283,7 @@ public class ServiceTests
         };
 
         // update article dto
-        var dto = new ArticleDTO
+        var model = new UpdateArticleModel
         {
             Id = id,
             Title = "New article title",
@@ -304,12 +304,12 @@ public class ServiceTests
                        .Returns(Task.CompletedTask);
 
         // act
-        var result = await _service.UpdateAsync(dto);
+        var result = await _service.UpdateAsync(model);
 
         // assert
         Assert.That(result, Is.True);
-        Assert.That(updatedModel.Title, Is.EqualTo(dto.Title));
-        Assert.That(updatedModel.Content, Is.EqualTo(dto.Content));
+        Assert.That(updatedModel.Title, Is.EqualTo(model.Title));
+        Assert.That(updatedModel.Content, Is.EqualTo(model.Content));
     }
 
     [Test]
@@ -329,7 +329,7 @@ public class ServiceTests
         };
 
         // update article dto
-        var dto = new ArticleDTO
+        var model = new UpdateArticleModel
         {
             Id = articleId,
             Title = "New Title",
@@ -344,7 +344,7 @@ public class ServiceTests
                        .ThrowsAsync(new DbUpdateException("Error updating article"));
 
         // play interrupted - act / assert
-        var ex = Assert.ThrowsAsync<DbUpdateException>(() => _service.UpdateAsync(dto));
+        var ex = Assert.ThrowsAsync<DbUpdateException>(() => _service.UpdateAsync(model));
         Assert.That(ex.Message, Is.EqualTo("Error updating article"));
     }
 }

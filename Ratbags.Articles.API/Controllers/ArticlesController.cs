@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Core.DTOs.Articles;
+using Ratbags.Core.Models.Articles;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
 
@@ -11,10 +12,10 @@ namespace Ratbags.Articles.API.Controllers;
 [Route("api/articles")]
 public class ArticlesController : ControllerBase
 {
-    private readonly IService _service;
+    private readonly IArticlesService _service;
     private readonly ILogger<ArticlesController> _logger;
 
-    public ArticlesController(IService service, ILogger<ArticlesController> logger)
+    public ArticlesController(IArticlesService service, ILogger<ArticlesController> logger)
     {
         _service = service;
         _logger = logger;
@@ -22,8 +23,8 @@ public class ArticlesController : ControllerBase
 
     [Authorize]
     [HttpDelete("{id}")]
-    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
+    [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
     [ProducesResponseType((int)HttpStatusCode.NoContent)]
     [SwaggerOperation(Summary = "Deletes an article by id", 
         Description = "Deletes an article by id")]
@@ -78,14 +79,15 @@ public class ArticlesController : ControllerBase
     [Authorize]
     [HttpPost]    
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
     [ProducesResponseType(typeof(Guid), (int)HttpStatusCode.Created)]
     [SwaggerOperation(Summary = "Creates an article", 
         Description = "Creates an article")]
-    public async Task<IActionResult> Post([FromBody] CreateArticleDTO createArticleDTO)
+    public async Task<IActionResult> Post([FromBody] CreateArticleModel model)
     {
         try
         {
-            var articleId = await _service.CreateAsync(createArticleDTO);
+            var articleId = await _service.CreateAsync(model);
 
             if (articleId != Guid.Empty)
             {
@@ -106,22 +108,22 @@ public class ArticlesController : ControllerBase
 
     [Authorize]
     [HttpPut]
-    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
+    [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
     [ProducesResponseType((int)HttpStatusCode.NoContent)]
     [SwaggerOperation(Summary = "Updates an article", 
         Description = "Updates an article")]
-    public async Task<IActionResult> Put([FromBody] ArticleDTO articleDTO)
+    public async Task<IActionResult> Put([FromBody] UpdateArticleModel model)
     {
         try
         {
-            var result = await _service.UpdateAsync(articleDTO);
+            var result = await _service.UpdateAsync(model);
 
             return result ? NoContent() : NotFound();
         }
         catch (Exception e)
         {
-            _logger.LogError($"Error updating article {articleDTO.Id}: {e.Message}");
+            _logger.LogError($"Error updating article {model.Id}: {e.Message}");
 
             return StatusCode((int)HttpStatusCode.InternalServerError, 
                 "An error occurred while updating the article");
