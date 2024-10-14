@@ -67,25 +67,36 @@ public class ArticlesService : IArticlesService
         }
     }
 
+    // yeah yeah i'll async it later
     public async Task<IEnumerable<ArticleDTO>> GetAsync()
     {
         _logger.LogInformation("getting articles...");
-        var articles = await _repository.GetAsync();
 
-        var articlesDTO = articles.Select(
-            article => new ArticleDTO
+        var articles = _repository.GetQueryable()
+            //.Where(x => x.Published != null) // build up your query
+            .OrderBy(x => x.Created);
+
+        var articleDTOs = new List<ArticleDTO>();
+
+        // deferred execution
+        foreach (var article in articles)
+        {
+            // TODO - write something to get number of comments / article using massTransit -
+            // this will be the async bit...
+
+            var articleDTO = new ArticleDTO
             {
                 Id = article.Id,
                 Title = article.Title,
                 Created = article.Created,
                 Updated = article.Updated,
                 Published = article.Published
-            })
-            .ToList();
+            };
 
-        // TODO - write something in comments that gets the number of comments / article
-        
-        return articlesDTO.OrderByDescending(x => x.Created);
+            articleDTOs.Add(articleDTO);
+        }
+
+        return articleDTOs.OrderByDescending(x => x.Created);
     }
 
     public async Task<ArticleDTO?> GetByIdAsync(Guid id)

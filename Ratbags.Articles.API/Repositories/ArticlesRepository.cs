@@ -31,10 +31,13 @@ public class ArticlesRepository : IArticlesRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<Article>> GetAsync()
+    /// <summary>
+    /// Get articles by deferred execution - i like this
+    /// </summary>
+    /// <returns></returns>
+    public IQueryable<Article> GetQueryable()
     {
-        _logger.LogInformation($"database cxn: {_context.Database.GetConnectionString()}");
-        return await _context.Articles.ToListAsync();
+        return _context.Articles;
     }
 
     public async Task<Article?> GetByIdAsync(Guid id)
