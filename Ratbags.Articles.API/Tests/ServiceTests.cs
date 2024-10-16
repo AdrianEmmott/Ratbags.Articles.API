@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
 using Ratbags.Articles.API.Interfaces;
+using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.Models.DB;
 using Ratbags.Articles.API.Services;
 using Ratbags.Core.DTOs.Articles;
@@ -237,28 +238,31 @@ public class ServiceTests
 
 
         // act
-        var result = await _service.GetAsync();
+        var model = new GetArticlesParameters { Skip = 0, Take = 0 };
+        var result = await _service.GetAsync(model);
 
         // assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result, Has.Exactly(2).Items);
 
         // order by descending (created date)
-        Assert.That(result.First().Title, Is.EqualTo(modelList.Last().Title));
-        Assert.That(result.Last().Title, Is.EqualTo(modelList.First().Title));
+        Assert.That(result.Items.First().Title, Is.EqualTo(modelList.Last().Title));
+        Assert.That(result.Items.Last().Title, Is.EqualTo(modelList.First().Title));
     }
 
     [Test]
     public async Task GetArticlesByIdAsync_Success_NoData()
     {
         // arrange
+        var model = new GetArticlesParameters { Skip = 0, Take = 0 };
+
         var modelList = new List<Article>();
 
         _mockRepository.Setup(r => r.GetQueryable())
                        .Returns(modelList.AsQueryable());
 
         // act
-        var result = await _service.GetAsync();
+        var result = await _service.GetAsync(model);
 
         // assert
         Assert.That(result, Is.Not.Null);

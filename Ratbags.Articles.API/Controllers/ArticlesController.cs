@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ratbags.Articles.API.Interfaces;
+using Ratbags.Articles.API.Models;
 using Ratbags.Core.DTOs.Articles;
 using Ratbags.Core.Models.Articles;
 using Swashbuckle.AspNetCore.Annotations;
@@ -45,13 +46,13 @@ public class ArticlesController : ControllerBase
         }
     }
 
-    [HttpGet]
+    [HttpGet("{skip}/{take}")]
     [ProducesResponseType(typeof(List<ArticleDTO>), (int)HttpStatusCode.OK)]
     [SwaggerOperation(Summary = "Gets all articles", 
         Description = "Returns a list of all articles or an empty list")]
-    public async Task<IActionResult> Get()
+    public async Task<IActionResult> Get([FromRoute] GetArticlesParameters model)
     {
-        var result = await _service.GetAsync();
+        var result = await _service.GetAsync(model);
 
         // debug - simulate slow response
         //System.Threading.Thread.Sleep(200);

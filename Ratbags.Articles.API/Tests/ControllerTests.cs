@@ -3,7 +3,9 @@ using Moq;
 using NUnit.Framework;
 using Ratbags.Articles.API.Controllers;
 using Ratbags.Articles.API.Interfaces;
+using Ratbags.Articles.API.Models;
 using Ratbags.Core.DTOs.Articles;
+using Ratbags.Core.Models;
 using Ratbags.Core.Models.Articles;
 using System.Net;
 
@@ -141,11 +143,13 @@ public class ControllerTests
     public async Task Get_Ok()
     {
         // arrange
-        _mockService.Setup(s => s.GetAsync())
-                   .ReturnsAsync(new List<ArticleDTO>());
+        var model = new GetArticlesParameters { Skip = 0, Take = 0 };
+
+        _mockService.Setup(s => s.GetAsync(model))
+                   .ReturnsAsync(new PagedResult<ArticleDTO>());
 
         // act
-        var result = await _controller.Get();
+        var result = await _controller.Get(model);
 
         // assert
         Assert.That(result, Is.TypeOf<OkObjectResult>());

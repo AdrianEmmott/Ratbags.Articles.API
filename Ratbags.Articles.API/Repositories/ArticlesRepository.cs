@@ -1,6 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Ratbags.Articles.API.Controllers;
 using Ratbags.Articles.API.Interfaces;
+using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.Models.DB;
+using System.Linq;
 
 namespace Ratbags.Articles.API.Repositories;
 
@@ -31,14 +34,38 @@ public class ArticlesRepository : IArticlesRepository
         await _context.SaveChangesAsync();
     }
 
-    /// <summary>
-    /// Get articles by deferred execution - i like this
-    /// </summary>
-    /// <returns></returns>
     public IQueryable<Article> GetQueryable()
     {
         return _context.Articles;
     }
+
+    public async Task<(List<Article> Articles, int TotalCount)> GetArticlesAsync(GetArticlesParameters model)
+    {
+        var query = _context.Articles.AsQueryable();
+
+        // TODO filters?
+        //if (!string.IsNullOrEmpty(articleType))
+        //{
+        //    //query = query.Where(a => a.Type == articleType);
+        //}
+
+        // get count before applying skip and take
+        var totalCount = await query.CountAsync();
+
+        // setup articles query
+        var articles = query;
+
+        if (model.Skip > 0 || model.Take > 0)
+        {
+            articles = articles.Skip(model.Skip).Take(model.Take);
+        }
+
+        articles = articles
+            .OrderByDescending(x => x.Created);
+
+        return (await articles.ToListAsync(), totalCount);
+    }
+
 
     public async Task<Article?> GetByIdAsync(Guid id)
     {

@@ -1,9 +1,11 @@
 ﻿using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Ratbags.Articles.API.Interfaces;
+using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.Models.DB;
 using Ratbags.Core.DTOs.Articles;
 using Ratbags.Core.Events.CommentsRequest;
+using Ratbags.Core.Models;
 using Ratbags.Core.Models.Articles;
 
 namespace Ratbags.Articles.API.Services;
@@ -67,22 +69,18 @@ public class ArticlesService : IArticlesService
         }
     }
 
-    // yeah yeah i'll async it later
-    public async Task<IEnumerable<ArticleDTO>> GetAsync()
+    public async Task<PagedResult<ArticleDTO>> GetAsync(GetArticlesParameters model)
     {
         _logger.LogInformation("getting articles...");
 
-        var articles = _repository.GetQueryable()
-            //.Where(x => x.Published != null) // build up your query
-            .OrderBy(x => x.Created);
+        var (articles, totalCount) = await _repository.GetArticlesAsync(model);
 
         var articleDTOs = new List<ArticleDTO>();
 
-        // deferred execution
         foreach (var article in articles)
         {
-            // TODO - write something to get number of comments / article using massTransit -
-            // this will be the async bit...
+            // TODO add in calls to get comments via rmq
+            //var commentCount = await _massTransitClient.GetCommentCountAsync(article.Id);
 
             var articleDTO = new ArticleDTO
             {
@@ -90,13 +88,22 @@ public class ArticlesService : IArticlesService
                 Title = article.Title,
                 Created = article.Created,
                 Updated = article.Updated,
-                Published = article.Published
+                Published = article.Published,
+                //CommentCount = commentCount
             };
 
             articleDTOs.Add(articleDTO);
         }
 
-        return articleDTOs.OrderByDescending(x => x.Created);
+        var result = new PagedResult<ArticleDTO>
+        {
+            Items = articleDTOs,
+            TotalCount = totalCount,
+            PageSize = model.Take,
+            CurrentPage = model.Skip == 0 && model.Take == 0 ? 1 : (model.Skip / model.Take) + 1
+        };
+
+        return result;
     }
 
     public async Task<ArticleDTO?> GetByIdAsync(Guid id)
