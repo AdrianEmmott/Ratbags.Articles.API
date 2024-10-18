@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Articles.API.Models;
-using Ratbags.Articles.API.Models.DB;
 using Ratbags.Core.DTOs.Articles;
 using Ratbags.Core.Models.Articles;
 using Swashbuckle.AspNetCore.Annotations;
