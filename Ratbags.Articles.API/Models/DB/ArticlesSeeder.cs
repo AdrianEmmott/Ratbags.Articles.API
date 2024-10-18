@@ -40,13 +40,6 @@ public class ArticleSeeder
             }
         }
 
-        // insert any remaining records that were not part of a full batch - don't think we'll need this as 
-        //if (articles.Count > 0)
-        //{
-        //    _context.Articles.AddRange(articles);
-        //    _context.SaveChanges();
-        //}
-
         // re-enable change tracking
         _context.ChangeTracker.AutoDetectChangesEnabled = true;
     }

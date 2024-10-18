@@ -29,17 +29,6 @@ public static class MassTransitServiceExtension
                 {
                     c.SetEntityName("articles.comments-count"); // set exchange name for this message type
                 });
-
-                // spare code! pointless but keep for now in case you move away from request/response
-                //cfg.Send<CommentsForArticleRequest>(x =>
-                //{
-                //    x.UseRoutingKeyFormatter(context => "comments.request");
-                //});
-
-                //cfg.Send<CommentsCountForArticleRequest>(x =>
-                //{
-                //    x.UseRoutingKeyFormatter(context => "comments-count.request");
-                //});
             });
         });
 
