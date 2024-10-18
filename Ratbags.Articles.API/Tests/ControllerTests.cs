@@ -146,7 +146,7 @@ public class ControllerTests
         var model = new GetArticlesParameters { Skip = 0, Take = 0 };
 
         _mockService.Setup(s => s.GetAsync(model))
-                   .ReturnsAsync(new PagedResult<ArticleDTO>());
+                   .ReturnsAsync(new PagedResult<ArticleListDTO>());
 
         // act
         var result = await _controller.Get(model);

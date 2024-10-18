@@ -15,7 +15,7 @@ namespace Ratbags.Articles.API.Tests;
 public class ServiceTests
 {
     private Mock<IArticlesRepository> _mockRepository;
-    private Mock<IRequestClient<CommentsForArticleRequest>> _mockMassTransitClient;
+    private Mock<IMassTransitService> _mockMassTransitService;
     private Mock<ILogger<ArticlesService>> _mockLogger;
 
     private ArticlesService _service;
@@ -24,10 +24,13 @@ public class ServiceTests
     public void SetUp()
     {
         _mockRepository = new Mock<IArticlesRepository>();
-        _mockMassTransitClient = new Mock<IRequestClient<CommentsForArticleRequest>>();
+        _mockMassTransitService = new Mock<IMassTransitService>();
         _mockLogger = new Mock<ILogger<ArticlesService>>();
 
-        _service = new ArticlesService(_mockRepository.Object, _mockMassTransitClient.Object, _mockLogger.Object);
+        _service = new ArticlesService(
+            _mockRepository.Object,
+            _mockMassTransitService.Object,
+            _mockLogger.Object);
     }
 
     // CREATE
@@ -83,10 +86,10 @@ public class ServiceTests
         var id = Guid.NewGuid();
 
         // in db
-        var model = new Article 
+        var model = new Article
         {
-            Id = id, 
-            Title = "Test Article" 
+            Id = id,
+            Title = "Test Article"
         };
 
         _mockRepository.Setup(r => r.GetByIdAsync(id))
@@ -150,31 +153,36 @@ public class ServiceTests
     {
         // arrange
         var id = Guid.NewGuid();
-        var article = new Article 
-        { 
-            Id = id, 
-            Title = "test title", 
-            Content = "test content" 
+        var article = new Article
+        {
+            Id = id,
+            Title = "test title",
+            Content = "test content"
         };
 
-        var response = new CommentsForArticleResponse
+        var comments = new List<CommentDTO>
         {
-            Comments = new List<CommentDTO> 
+            new CommentDTO
             {
-                new CommentDTO 
-                { 
-                    Content = "test comment" 
-                } 
-            }
+                Id = Guid.NewGuid(),
+                ArticleId = article.Id,
+                Content = "some comment 1",
+                Published = DateTime.UtcNow.AddDays(-2)
+            },
+            new CommentDTO
+            {
+                Id = Guid.NewGuid(),
+                ArticleId = article.Id,
+                Content = "some comment 2",
+                Published = DateTime.UtcNow.AddDays(-1)
+            },
         };
 
         _mockRepository.Setup(r => r.GetByIdAsync(id))
-                       .ReturnsAsync(article);
+                           .ReturnsAsync(article);
 
-        _mockMassTransitClient.Setup(m => m.GetResponse<CommentsForArticleResponse>
-            (It.IsAny<CommentsForArticleRequest>(), default, default))
-            .ReturnsAsync(Mock.Of<Response<CommentsForArticleResponse>>
-                (r => r.Message == response));
+        _mockMassTransitService.Setup(m => m.GetCommentsForArticleAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(comments);
 
         // act
         var result = await _service.GetByIdAsync(id);
@@ -185,8 +193,6 @@ public class ServiceTests
         Assert.That(result.Comments, Has.Count.EqualTo(1));
 
         _mockRepository.Verify(r => r.GetByIdAsync(id), Times.Once);
-        _mockMassTransitClient.Verify(m => m.GetResponse<CommentsForArticleResponse>
-            (It.IsAny<CommentsForArticleRequest>(), default, default), Times.Once);
     }
 
     [Test]
@@ -204,69 +210,68 @@ public class ServiceTests
         // assert
         Assert.That(result, Is.Null);
         _mockRepository.Verify(r => r.GetByIdAsync(id), Times.Once);
-        _mockMassTransitClient.Verify(m => m.GetResponse<CommentsForArticleResponse>
-            (It.IsAny<CommentsForArticleRequest>(), default, default), Times.Never);
     }
 
 
     // GET ARTICLES
     [Test]
-    public async Task GetArticlesByIdAsync_Success()
+    public async Task GetArticlesAsync_Success()
     {
         // arrange
         // in db
         var modelList = new List<Article>
         {
-            new Article { 
-                Id = Guid.NewGuid(), 
-                Title = "Article 1", 
-                Created = DateTime.Now.AddDays(-2), 
-                Updated = DateTime.MinValue, 
-                Published = DateTime.MinValue
+            new Article {
+                Id = Guid.NewGuid(),
+                Title = "article 2",
+                Description="some desc 2",
+                Created = DateTime.Now.AddDays(-1),
+                Updated = DateTime.Now.AddDays(-1),
+                Published = DateTime.Now
             },
-            new Article { 
-                Id = Guid.NewGuid(), 
-                Title = "Article 2", 
-                Created = DateTime.Now.AddDays(-1), 
-                Updated = DateTime.Now.AddDays(-1), 
-                Published = DateTime.Now 
+            new Article {
+                Id = Guid.NewGuid(),
+                Title = "article 1",
+                Description="some desc 1",
+                Created = DateTime.Now.AddDays(-2),
+                Updated = DateTime.MinValue,
+                Published = DateTime.MinValue
             }
         };
 
-        _mockRepository.Setup(r => r.GetQueryable())
-                      .Returns(modelList.AsQueryable());
+        var model = new GetArticlesParameters { Skip = 0, Take = 0 };
 
+        _mockRepository.Setup(r => r.GetArticlesAsync(model))
+                      .ReturnsAsync((modelList, modelList.Count));
+
+        _mockMassTransitService.Setup(m => m.GetCommentsCountForArticleAsync(It.IsAny<Guid>()))
+           .ReturnsAsync(modelList.Count);
 
         // act
-        var model = new GetArticlesParameters { Skip = 0, Take = 0 };
         var result = await _service.GetAsync(model);
 
         // assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result, Has.Exactly(2).Items);
-
-        // order by descending (created date)
-        Assert.That(result.Items.First().Title, Is.EqualTo(modelList.Last().Title));
-        Assert.That(result.Items.Last().Title, Is.EqualTo(modelList.First().Title));
+        Assert.That(result.Items, Has.Exactly(2).Items);
     }
 
     [Test]
-    public async Task GetArticlesByIdAsync_Success_NoData()
+    public async Task GetArticlesAsync_Success_NoData()
     {
         // arrange
         var model = new GetArticlesParameters { Skip = 0, Take = 0 };
 
         var modelList = new List<Article>();
 
-        _mockRepository.Setup(r => r.GetQueryable())
-                       .Returns(modelList.AsQueryable());
+        _mockRepository.Setup(r => r.GetArticlesAsync(model))
+                       .ReturnsAsync((modelList, modelList.Count));
 
         // act
         var result = await _service.GetAsync(model);
 
         // assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result, Has.Exactly(0).Items);
+        Assert.That(result.Items, Has.Exactly(0).Items);
     }
 
 

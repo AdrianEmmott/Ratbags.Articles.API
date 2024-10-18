@@ -11,6 +11,7 @@ public static class DIServiceExtension
         // Register services
         services.AddScoped<IArticlesService, ArticlesService>();
         services.AddScoped<IArticlesRepository, ArticlesRepository>();
+        services.AddScoped<IMassTransitService, MassTransitService>();
 
         return services;
     }

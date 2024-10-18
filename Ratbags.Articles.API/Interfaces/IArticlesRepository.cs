@@ -7,10 +7,7 @@ public interface IArticlesRepository
 {
     Task<Guid> CreateAsync(Article article);
     Task DeleteAsync(Guid id);
-
     Task<(List<Article> Articles, int TotalCount)> GetArticlesAsync(GetArticlesParameters model);
-
-    IQueryable<Article> GetQueryable();
     Task<Article?> GetByIdAsync(Guid id);
     Task UpdateAsync(Article article);
 }

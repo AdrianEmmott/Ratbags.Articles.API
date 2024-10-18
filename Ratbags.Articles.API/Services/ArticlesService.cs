@@ -13,15 +13,16 @@ namespace Ratbags.Articles.API.Services;
 public class ArticlesService : IArticlesService
 {
     private readonly IArticlesRepository _repository;
-    private readonly IRequestClient<CommentsForArticleRequest> _massTrasitClient;
+    private readonly IMassTransitService _massTransitService;
     private readonly ILogger<ArticlesService> _logger;
 
-    public ArticlesService(IArticlesRepository repository,
-        IRequestClient<CommentsForArticleRequest> massTrasitClient,
+    public ArticlesService(
+        IArticlesRepository repository,
+        IMassTransitService massTransitService,
         ILogger<ArticlesService> logger)
     {
         _repository = repository;
-        _massTrasitClient = massTrasitClient;
+        _massTransitService = massTransitService;
         _logger = logger;
     }
 
@@ -69,35 +70,43 @@ public class ArticlesService : IArticlesService
         }
     }
 
-    public async Task<PagedResult<ArticleDTO>> GetAsync(GetArticlesParameters model)
+    public async Task<PagedResult<ArticleListDTO>> GetAsync(GetArticlesParameters model)
     {
         _logger.LogInformation("getting articles...");
 
         var (articles, totalCount) = await _repository.GetArticlesAsync(model);
 
-        var articleDTOs = new List<ArticleDTO>();
+        var listDTOs = new List<ArticleListDTO>();
 
         foreach (var article in articles)
         {
-            // TODO add in calls to get comments via rmq
-            //var commentCount = await _massTransitClient.GetCommentCountAsync(article.Id);
-
-            var articleDTO = new ArticleDTO
+            try
             {
-                Id = article.Id,
-                Title = article.Title,
-                Created = article.Created,
-                Updated = article.Updated,
-                Published = article.Published,
-                //CommentCount = commentCount
-            };
+                // get comments count/article via rmq
+                var commentCount = await _massTransitService.GetCommentsCountForArticleAsync(article.Id);
 
-            articleDTOs.Add(articleDTO);
+                var dto = new ArticleListDTO
+                {
+                    Id = article.Id,
+                    Title = article.Title,
+                    Description = article.Description,
+                    Image = article.ImageUrl ?? string.Empty,
+                    CommentCount = commentCount,
+                    Published = article.Published
+                };
+
+                listDTOs.Add(dto);
+            }
+            catch (MassTransitException e)
+            {
+                _logger.LogError($"Error sending comments count request for article {article.Id}: {e.Message} : {e.InnerException}");
+                throw;
+            }
         }
 
-        var result = new PagedResult<ArticleDTO>
+        var result = new PagedResult<ArticleListDTO>
         {
-            Items = articleDTOs,
+            Items = listDTOs,
             TotalCount = totalCount,
             PageSize = model.Take,
             CurrentPage = model.Skip == 0 && model.Take == 0 ? 1 : (model.Skip / model.Take) + 1
@@ -114,12 +123,7 @@ public class ArticlesService : IArticlesService
         {
             try
             {
-                var response = await _massTrasitClient
-                                .GetResponse<CommentsForArticleResponse>
-                                (new CommentsForArticleRequest
-                                {
-                                    ArticleId = id
-                                });
+                var comments = await _massTransitService.GetCommentsForArticleAsync(article.Id);
 
                 return new ArticleDTO
                 {
@@ -129,7 +133,7 @@ public class ArticlesService : IArticlesService
                     Created = article.Created,
                     Updated = article.Updated,
                     Published = article.Published,
-                    Comments = response.Message.Comments
+                    Comments = comments
                 };
             }
             catch (MassTransitException e)

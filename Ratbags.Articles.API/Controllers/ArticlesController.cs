@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Articles.API.Models;
+using Ratbags.Articles.API.Models.DB;
 using Ratbags.Core.DTOs.Articles;
 using Ratbags.Core.Models.Articles;
 using Swashbuckle.AspNetCore.Annotations;
@@ -130,4 +131,13 @@ public class ArticlesController : ControllerBase
                 "An error occurred while updating the article");
         }
     }
+
+    //[HttpGet("seed")]
+    //public IActionResult Seed([FromServices] ApplicationDbContext context)
+    //{
+    //    var seeder = new ArticleSeeder(context);
+    //    seeder.SeedArticles(500000); 
+
+    //    return Ok();
+    //}
 }

@@ -9,7 +9,7 @@ public interface IArticlesService
 {
     Task<Guid> CreateAsync(CreateArticleModel model);
     Task<bool> DeleteAsync(Guid id);
-    Task<PagedResult<ArticleDTO>> GetAsync(GetArticlesParameters model);
+    Task<PagedResult<ArticleListDTO>> GetAsync(GetArticlesParameters model);
     Task<ArticleDTO?> GetByIdAsync(Guid id);
     Task<bool> UpdateAsync(UpdateArticleModel model);
 }
