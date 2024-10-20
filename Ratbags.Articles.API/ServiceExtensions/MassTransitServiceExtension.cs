@@ -1,4 +1,5 @@
 ﻿using MassTransit;
+using Ratbags.Core.Events.Accounts;
 using Ratbags.Core.Events.CommentsRequest;
 using Ratbags.Core.Settings;
 
@@ -18,6 +19,11 @@ public static class MassTransitServiceExtension
                 {
                     h.Username(appSettings.Messaging.Username);
                     h.Password(appSettings.Messaging.Password);
+                });
+
+                cfg.Message<UserFullNameRequest>(c =>
+                {
+                    c.SetEntityName("accounts.user-full-name"); // set exchange name for this message type
                 });
 
                 cfg.Message<CommentsForArticleRequest>(c =>

@@ -90,7 +90,7 @@ public class ArticlesService : IArticlesService
                     Id = article.Id,
                     Title = article.Title,
                     Description = article.Description,
-                    Image = article.ImageUrl ?? string.Empty,
+                    ThumbnailImageUrl = article.ImageUrl ?? string.Empty,
                     CommentCount = commentCount,
                     Published = article.Published
                 };
@@ -125,16 +125,20 @@ public class ArticlesService : IArticlesService
             {
                 var comments = await _massTransitService.GetCommentsForArticleAsync(article.Id);
 
-                return new ArticleDTO
+                var articleDTO =  new ArticleDTO
                 {
                     Id = article.Id,
                     Title = article.Title,
                     Content = article.Content,
+                    BannerImageUrl = article.ImageUrl,
                     Created = article.Created,
                     Updated = article.Updated,
                     Published = article.Published,
-                    Comments = comments
+                    Comments = comments,
+                    AuthorName = await _massTransitService.GetUserNameDetailsAsync(Guid.Parse("a13b474f-82c6-4e6a-8c90-7e5b65b51048")),
                 };
+
+                return articleDTO;
             }
             catch (MassTransitException e)
             {

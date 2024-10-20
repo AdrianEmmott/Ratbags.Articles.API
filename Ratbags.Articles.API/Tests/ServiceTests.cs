@@ -165,14 +165,12 @@ public class ServiceTests
             new CommentDTO
             {
                 Id = Guid.NewGuid(),
-                ArticleId = article.Id,
                 Content = "some comment 1",
                 Published = DateTime.UtcNow.AddDays(-2)
             },
             new CommentDTO
             {
                 Id = Guid.NewGuid(),
-                ArticleId = article.Id,
                 Content = "some comment 2",
                 Published = DateTime.UtcNow.AddDays(-1)
             },
@@ -190,7 +188,7 @@ public class ServiceTests
         // assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(id));
-        Assert.That(result.Comments, Has.Count.EqualTo(1));
+        Assert.That(result.Comments, Has.Count.EqualTo(2));
 
         _mockRepository.Verify(r => r.GetByIdAsync(id), Times.Once);
     }

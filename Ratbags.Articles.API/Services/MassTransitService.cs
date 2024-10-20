@@ -1,6 +1,7 @@
 ﻿using MassTransit;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Core.DTOs.Articles;
+using Ratbags.Core.Events.Accounts;
 using Ratbags.Core.Events.CommentsRequest;
 
 namespace Ratbags.Articles.API.Services
@@ -9,13 +10,16 @@ namespace Ratbags.Articles.API.Services
     {
         private readonly IRequestClient<CommentsForArticleRequest> _massTrasitCommentsClient;
         private readonly IRequestClient<CommentsCountForArticleRequest> _massTrasitClientCommentsCountClient;
+        private readonly IRequestClient<UserFullNameRequest> _massTrasitUserNameDetailsClient;
 
         public MassTransitService(
             IRequestClient<CommentsForArticleRequest> massTrasitCommentsClient, 
-            IRequestClient<CommentsCountForArticleRequest> massTrasitClientCommentsCountClient)
+            IRequestClient<CommentsCountForArticleRequest> massTrasitClientCommentsCountClient,
+            IRequestClient<UserFullNameRequest> massTrasitUserNameDetailsClient)
         {
             _massTrasitCommentsClient = massTrasitCommentsClient;
             _massTrasitClientCommentsCountClient = massTrasitClientCommentsCountClient;
+            _massTrasitUserNameDetailsClient = massTrasitUserNameDetailsClient;
         }
 
         public async Task<List<CommentDTO>> GetCommentsForArticleAsync(Guid id)
@@ -40,6 +44,26 @@ namespace Ratbags.Articles.API.Services
                                     });
 
             return response.Message.Count;
+        }
+
+        public async Task<string> GetUserNameDetailsAsync(Guid id)
+        {
+            try
+            {
+                var response = await _massTrasitUserNameDetailsClient
+                                .GetResponse<UserFullNameResponse>
+                                (new UserFullNameRequest
+                                {
+                                    UserId = id
+                                });
+
+                return response.Message.FullName;
+
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
         }
     }
 }
