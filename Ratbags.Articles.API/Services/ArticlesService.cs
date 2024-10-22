@@ -4,7 +4,6 @@ using Ratbags.Articles.API.Interfaces;
 using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.Models.DB;
 using Ratbags.Core.DTOs.Articles;
-using Ratbags.Core.Events.CommentsRequest;
 using Ratbags.Core.Models;
 using Ratbags.Core.Models.Articles;
 
@@ -33,7 +32,10 @@ public class ArticlesService : IArticlesService
             Id = Guid.NewGuid(),
             Title = model.Title,
             Content = model.Content,
-            Created = model.Created
+            Description = model.Description,
+            Introduction = model.Introduction,
+            BannerImageUrl = model.BannerImageUrl,
+            Created = model.Created,
         };
 
         try
@@ -82,16 +84,13 @@ public class ArticlesService : IArticlesService
         {
             try
             {
-                // get comments count/article via rmq
-                var commentCount = await _massTransitService.GetCommentsCountForArticleAsync(article.Id);
-
                 var dto = new ArticleListDTO
                 {
                     Id = article.Id,
                     Title = article.Title,
                     Description = article.Description,
-                    ThumbnailImageUrl = article.ImageUrl ?? string.Empty,
-                    CommentCount = commentCount,
+                    ThumbnailImageUrl = article.BannerImageUrl ?? string.Empty,
+                    CommentCount = await _massTransitService.GetCommentsCountForArticleAsync(article.Id),
                     Published = article.Published
                 };
 
@@ -129,13 +128,15 @@ public class ArticlesService : IArticlesService
                 {
                     Id = article.Id,
                     Title = article.Title,
+                    Description = article.Description,
+                    Introduction = article.Introduction,
                     Content = article.Content,
-                    BannerImageUrl = article.ImageUrl,
+                    BannerImageUrl = article.BannerImageUrl,
                     Created = article.Created,
                     Updated = article.Updated,
                     Published = article.Published,
                     Comments = comments,
-                    AuthorName = await _massTransitService.GetUserNameDetailsAsync(Guid.Parse("a13b474f-82c6-4e6a-8c90-7e5b65b51048")),
+                    AuthorName = await _massTransitService.GetUserNameDetailsAsync(article.UserId),
                 };
 
                 return articleDTO;
@@ -160,7 +161,10 @@ public class ArticlesService : IArticlesService
         }
 
         existingArticle.Title = model.Title;
+        existingArticle.Description = model.Description;
+        existingArticle.Introduction = model.Introduction;
         existingArticle.Content = model.Content;
+        existingArticle.BannerImageUrl = model.BannerImageUrl;
         existingArticle.Updated = DateTime.Now;
 
         try

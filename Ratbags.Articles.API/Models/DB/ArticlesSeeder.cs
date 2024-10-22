@@ -27,8 +27,8 @@ public class ArticleSeeder
                 Content = $"Some content for article {i + 1}",
                 Created = DateTime.UtcNow,
                 Updated =  null,
-                Published = null,
-                ImageUrl = null
+                Published = null, 
+                BannerImageUrl = null
             });
 
             // batch

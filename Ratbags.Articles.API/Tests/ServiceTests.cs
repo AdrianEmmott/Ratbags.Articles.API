@@ -296,7 +296,7 @@ public class ServiceTests
             Id = id,
             Title = "New article title",
             Content = "<p>lorem ipsum</p>",
-            Created = DateTime.Now,
+            Updated = DateTime.Now,
         };
 
         _mockRepository.Setup(r => r.GetByIdAsync(id))
@@ -342,7 +342,7 @@ public class ServiceTests
             Id = articleId,
             Title = "New Title",
             Content = "<p>lorem ipsum</p>",
-            Created = DateTime.Now
+            Updated = DateTime.Now
         };
 
         _mockRepository.Setup(r => r.GetByIdAsync(articleId))

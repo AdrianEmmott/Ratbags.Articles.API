@@ -104,7 +104,7 @@ public class ControllerTests
         // assert
         Assert.That(result, Is.TypeOf<OkObjectResult>());
         var okResult = result as OkObjectResult;
-        Assert.That(okResult.Value, Is.EqualTo(dto));
+        Assert.That(okResult?.Value, Is.EqualTo(dto));
     }
 
     [Test]
@@ -252,7 +252,7 @@ public class ControllerTests
             Id = Guid.NewGuid(),
             Title = "An article title",
             Content = "<p>lorem ipsum</p>",
-            Created = DateTime.Now,
+            Updated = DateTime.Now,
         };
 
         _mockService.Setup(s => s.UpdateAsync(It.IsAny<UpdateArticleModel>()))
@@ -276,7 +276,7 @@ public class ControllerTests
         {
             Title = "An article title",
             Content = "<p>lorem ipsum</p>",
-            Created = DateTime.Now,
+            Updated = DateTime.Now,
         };
 
         // act
@@ -297,7 +297,7 @@ public class ControllerTests
         {
             Title = "An article title",
             Content = "<p>lorem ipsum</p>",
-            Created = DateTime.Now,
+            Updated = DateTime.Now,
         };
 
         // act

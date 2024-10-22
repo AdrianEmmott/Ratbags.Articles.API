@@ -13,7 +13,7 @@ namespace Ratbags.Articles.API.Services
         private readonly IRequestClient<UserFullNameRequest> _massTrasitUserNameDetailsClient;
 
         public MassTransitService(
-            IRequestClient<CommentsForArticleRequest> massTrasitCommentsClient, 
+            IRequestClient<CommentsForArticleRequest> massTrasitCommentsClient,
             IRequestClient<CommentsCountForArticleRequest> massTrasitClientCommentsCountClient,
             IRequestClient<UserFullNameRequest> massTrasitUserNameDetailsClient)
         {
@@ -48,22 +48,14 @@ namespace Ratbags.Articles.API.Services
 
         public async Task<string> GetUserNameDetailsAsync(Guid id)
         {
-            try
-            {
-                var response = await _massTrasitUserNameDetailsClient
-                                .GetResponse<UserFullNameResponse>
-                                (new UserFullNameRequest
-                                {
-                                    UserId = id
-                                });
+            var response = await _massTrasitUserNameDetailsClient
+                            .GetResponse<UserFullNameResponse>
+                            (new UserFullNameRequest
+                            {
+                                UserId = id
+                            });
 
-                return response.Message.FullName;
-
-            }
-            catch (Exception e)
-            {
-                throw;
-            }
+            return response.Message.FullName;
         }
     }
 }

@@ -11,7 +11,9 @@ public partial class Article
 
     public string Title { get; set; } = null!;
 
-    public string Description { get; set;} = null!;
+    public string? Description { get; set;} // tag line for lists
+
+    public string? Introduction { get; set; } // intro on the article itself
 
     public string Content { get; set; } = null!;
 
@@ -21,7 +23,7 @@ public partial class Article
 
     public DateTime? Published { get; set; }
 
-    public string? ImageUrl { get; set; }
+    public string? BannerImageUrl { get; set; }
 
     public Guid UserId { get; set; }
 }
