@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Articles.API.Models;
+using Ratbags.Articles.API.Models.API;
 using Ratbags.Core.DTOs.Articles;
-using Ratbags.Core.Models.Articles;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
 
@@ -14,12 +14,18 @@ namespace Ratbags.Articles.API.Controllers;
 public class ArticlesController : ControllerBase
 {
     private readonly IArticlesService _service;
+    private readonly IArticleViewsService _viewService;
     private readonly ILogger<ArticlesController> _logger;
 
-    public ArticlesController(IArticlesService service, ILogger<ArticlesController> logger)
+    public ArticlesController(
+        IArticlesService service, 
+
+        ILogger<ArticlesController> logger,
+        IArticleViewsService viewService)
     {
         _service = service;
         _logger = logger;
+        _viewService = viewService;
     }
 
     [Authorize]
@@ -73,7 +79,17 @@ public class ArticlesController : ControllerBase
         }
 
         var result = await _service.GetByIdAsync(id);
-        
+
+        // move to service? move to ui?! would probably speed up article retrieval if all this was removed from this call
+        if (result != null)
+        {
+            // get view count
+            result.Views = await _viewService.GetAsync(new Models.API.ArticleViewsGet { ArticleId = id });
+
+            // set view count
+            await _viewService.CreateAsync(new Models.API.ArticleViewsCreate { ArticleId = id });
+        }
+
         return result == null ? NotFound() : Ok(result);
     }
 
@@ -84,7 +100,7 @@ public class ArticlesController : ControllerBase
     [ProducesResponseType(typeof(Guid), (int)HttpStatusCode.Created)]
     [SwaggerOperation(Summary = "Creates an article", 
         Description = "Creates an article")]
-    public async Task<IActionResult> Post([FromBody] CreateArticleModel model)
+    public async Task<IActionResult> Post([FromBody] ArticleCreate model)
     {
         try
         {
@@ -114,7 +130,7 @@ public class ArticlesController : ControllerBase
     [ProducesResponseType((int)HttpStatusCode.NoContent)]
     [SwaggerOperation(Summary = "Updates an article", 
         Description = "Updates an article")]
-    public async Task<IActionResult> Put([FromBody] UpdateArticleModel model)
+    public async Task<IActionResult> Put([FromBody] ArticleUpdate model)
     {
         try
         {

@@ -4,18 +4,18 @@ using NUnit.Framework;
 using Ratbags.Articles.API.Controllers;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Articles.API.Models;
-using Ratbags.Core.DTOs.Articles;
+using Ratbags.Articles.API.Models.API;
+using Ratbags.Articles.API.Models.DTOs;
 using Ratbags.Core.Models;
-using Ratbags.Core.Models.Articles;
 using System.Net;
 
 namespace Ratbags.Articles.API.Tests;
-
 
 [TestFixture]
 public class ControllerTests
 {
     private Mock<IArticlesService> _mockService;
+    private Mock<IArticleViewsService> _mockViewsService;
     private Mock<ILogger<ArticlesController>> _mockLogger;
 
     private ArticlesController _controller;
@@ -24,8 +24,9 @@ public class ControllerTests
     public void SetUp()
     {
         _mockService = new Mock<IArticlesService>();
+        _mockViewsService = new Mock<IArticleViewsService>();
         _mockLogger = new Mock<ILogger<ArticlesController>>();
-        _controller = new ArticlesController(_mockService.Object, _mockLogger.Object);
+        _controller = new ArticlesController(_mockService.Object, _mockLogger.Object, _mockViewsService.Object);
     }
 
     // DELETE
@@ -161,7 +162,7 @@ public class ControllerTests
     public async Task Post_Created()
     {
         // arrange
-        var model = new CreateArticleModel
+        var model = new ArticleCreate
         {
             Title = "New Title",
             Content = "New Comment"
@@ -169,7 +170,7 @@ public class ControllerTests
 
         var newId = Guid.NewGuid();
 
-        _mockService.Setup(s => s.CreateAsync(It.IsAny<CreateArticleModel>()))
+        _mockService.Setup(s => s.CreateAsync(It.IsAny<ArticleCreate>()))
             .ReturnsAsync(newId);
 
         // act
@@ -195,10 +196,10 @@ public class ControllerTests
     public async Task Post_BadRequest()
     {
         // arrange
-        _mockService.Setup(s => s.CreateAsync(It.IsAny<CreateArticleModel>()))
+        _mockService.Setup(s => s.CreateAsync(It.IsAny<ArticleCreate>()))
                    .ReturnsAsync(Guid.Empty);
 
-        var model = new CreateArticleModel
+        var model = new ArticleCreate
         {
             Title = string.Empty,
             Content = "<p>lorem ipsum</p>",
@@ -218,10 +219,10 @@ public class ControllerTests
     public async Task Post_Exception()
     {
         // arrange
-        _mockService.Setup(s => s.CreateAsync(It.IsAny<CreateArticleModel>()))
+        _mockService.Setup(s => s.CreateAsync(It.IsAny<ArticleCreate>()))
             .ThrowsAsync(new Exception("test exception"));
 
-        var dto = new CreateArticleModel
+        var dto = new ArticleCreate
         {
             Title = "An article title",
             Content = "<p>lorem ipsum</p>",
@@ -247,7 +248,7 @@ public class ControllerTests
     public async Task Put_NoContent()
     {
         // arrange
-        var model = new UpdateArticleModel
+        var model = new ArticleUpdate
         {
             Id = Guid.NewGuid(),
             Title = "An article title",
@@ -255,7 +256,7 @@ public class ControllerTests
             Updated = DateTime.Now,
         };
 
-        _mockService.Setup(s => s.UpdateAsync(It.IsAny<UpdateArticleModel>()))
+        _mockService.Setup(s => s.UpdateAsync(It.IsAny<ArticleUpdate>()))
             .ReturnsAsync(true);
 
         // act
@@ -269,10 +270,10 @@ public class ControllerTests
     public async Task Put_NotFound()
     {
         // arrange
-        _mockService.Setup(s => s.UpdateAsync(It.IsAny<UpdateArticleModel>()))
+        _mockService.Setup(s => s.UpdateAsync(It.IsAny<ArticleUpdate>()))
             .ReturnsAsync(false);
 
-        var model = new UpdateArticleModel
+        var model = new ArticleUpdate
         {
             Title = "An article title",
             Content = "<p>lorem ipsum</p>",
@@ -290,10 +291,10 @@ public class ControllerTests
     public async Task Put_Exception()
     {
         // arrange
-        _mockService.Setup(s => s.UpdateAsync(It.IsAny<UpdateArticleModel>()))
+        _mockService.Setup(s => s.UpdateAsync(It.IsAny<ArticleUpdate>()))
             .ThrowsAsync(new Exception("test exception"));
 
-        var model = new UpdateArticleModel
+        var model = new ArticleUpdate
         {
             Title = "An article title",
             Content = "<p>lorem ipsum</p>",

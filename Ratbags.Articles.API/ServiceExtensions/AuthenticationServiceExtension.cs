@@ -24,7 +24,8 @@ public static class AuthenticationServiceExtension
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = settings.JWT.Issuer,
                 ValidAudience = settings.JWT.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.JWT.Secret))
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.JWT.Secret)),
+                ClockSkew = TimeSpan.Zero
             };
         });
 

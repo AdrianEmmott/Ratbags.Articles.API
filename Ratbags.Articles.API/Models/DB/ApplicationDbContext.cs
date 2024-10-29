@@ -15,6 +15,12 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<Article> Articles { get; set; }
 
+    public virtual DbSet<ArticleCarousels> ArticleCarousels { get; set; }
+
+    public virtual DbSet<ArticleCarouselImages> ArticleCarouselImages { get; set; }
+
+    public virtual DbSet<ArticleViews> ArticleViews { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Article>(entity =>

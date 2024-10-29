@@ -1,14 +1,12 @@
-﻿using MassTransit;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Articles.API.Models;
+using Ratbags.Articles.API.Models.API;
 using Ratbags.Articles.API.Models.DB;
 using Ratbags.Articles.API.Services;
 using Ratbags.Core.DTOs.Articles;
-using Ratbags.Core.Events.CommentsRequest;
-using Ratbags.Core.Models.Articles;
 
 namespace Ratbags.Articles.API.Tests;
 
@@ -38,7 +36,7 @@ public class ServiceTests
     public async Task CreateArticleAsync_Success()
     {
         // arrange
-        var model = new CreateArticleModel
+        var model = new ArticleCreate
         {
             Title = "An article title",
             Content = "<p>lorem ipsum</p>",
@@ -62,7 +60,7 @@ public class ServiceTests
     public void CreateAsync_Exception()
     {
         // arrange
-        var model = new CreateArticleModel
+        var model = new ArticleCreate
         {
             Title = "An article title",
             Content = "<p>lorem ipsum</p>",
@@ -291,7 +289,7 @@ public class ServiceTests
         };
 
         // update article dto
-        var model = new UpdateArticleModel
+        var model = new ArticleUpdate
         {
             Id = id,
             Title = "New article title",
@@ -337,7 +335,7 @@ public class ServiceTests
         };
 
         // update article dto
-        var model = new UpdateArticleModel
+        var model = new ArticleUpdate
         {
             Id = articleId,
             Title = "New Title",

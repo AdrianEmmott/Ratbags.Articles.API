@@ -2,10 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Articles.API.Models;
+using Ratbags.Articles.API.Models.API;
 using Ratbags.Articles.API.Models.DB;
-using Ratbags.Core.DTOs.Articles;
+using Ratbags.Articles.API.Models.DTOs;
 using Ratbags.Core.Models;
-using Ratbags.Core.Models.Articles;
 
 namespace Ratbags.Articles.API.Services;
 
@@ -25,7 +25,7 @@ public class ArticlesService : IArticlesService
         _logger = logger;
     }
 
-    public async Task<Guid> CreateAsync(CreateArticleModel model)
+    public async Task<Guid> CreateAsync(ArticleCreate model)
     {
         var newArticle = new Article
         {
@@ -36,6 +36,7 @@ public class ArticlesService : IArticlesService
             Introduction = model.Introduction,
             BannerImageUrl = model.BannerImageUrl,
             Created = model.Created,
+            UserId = model.AuthorUserId,
         };
 
         try
@@ -151,7 +152,7 @@ public class ArticlesService : IArticlesService
         return null;
     }
 
-    public async Task<bool> UpdateAsync(UpdateArticleModel model)
+    public async Task<bool> UpdateAsync(ArticleUpdate model)
     {
         var existingArticle = await _repository.GetByIdAsync(model.Id);
 
@@ -166,6 +167,7 @@ public class ArticlesService : IArticlesService
         existingArticle.Content = model.Content;
         existingArticle.BannerImageUrl = model.BannerImageUrl;
         existingArticle.Updated = DateTime.Now;
+        existingArticle.UserId = model.AuthorUserId;
 
         try
         {
