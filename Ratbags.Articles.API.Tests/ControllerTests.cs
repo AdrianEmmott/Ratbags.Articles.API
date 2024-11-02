@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using Ratbags.Articles.API.Controllers;
@@ -181,12 +182,12 @@ public class ControllerTests
         var createdResult = result as CreatedAtActionResult;
 
         // assert action name correct
-        Assert.That(createdResult.ActionName,
+        Assert.That(createdResult?.ActionName,
             Is.EqualTo(nameof(ArticlesController.Get)));
 
         // assert route values correct id
-        Assert.That(createdResult.RouteValues.ContainsKey("id"));
-        Assert.That(createdResult.RouteValues["id"], Is.EqualTo(newId));
+        Assert.That(createdResult?.RouteValues?.ContainsKey("id") ?? false);
+        Assert.That(createdResult?.RouteValues?["id"], Is.EqualTo(newId));
 
         // assert returned value is the new id
         Assert.That(createdResult.Value, Is.EqualTo(newId));

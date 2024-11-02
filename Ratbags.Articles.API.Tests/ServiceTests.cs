@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
-using NUnit.Framework;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.Models.API;

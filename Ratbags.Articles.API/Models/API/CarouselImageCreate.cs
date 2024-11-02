@@ -11,6 +11,6 @@ namespace Ratbags.Articles.API.Models.API
         public int ArticleId { get; set; }
 
         [Required(ErrorMessage = "Title is required")]
-        public string Title { get; set; }=string.Empty;
+        public string Title { get; set; } = default!;
     }
 }

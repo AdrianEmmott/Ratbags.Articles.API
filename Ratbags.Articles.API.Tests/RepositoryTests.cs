@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
-using NUnit.Framework;
 using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.Models.DB;
 using Ratbags.Articles.API.Repositories;
@@ -16,7 +16,6 @@ public class RepositoryTests
     {
         _mockLogger = new Mock<ILogger<ArticlesRepository>>();
     }
-
 
     [Test]
     public async Task GetArticlesAsync_Success_OrderDescendingCreated()

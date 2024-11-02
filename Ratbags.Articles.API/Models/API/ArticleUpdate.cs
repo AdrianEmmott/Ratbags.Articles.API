@@ -8,14 +8,14 @@ namespace Ratbags.Articles.API.Models.API
         public Guid Id { get; set; }
 
         [Required(ErrorMessage = "Title is required")]
-        public string Title { get; set; } = string.Empty;
+        public string Title { get; set; } = default!;
 
         public string? Description { get; set; }
 
         public string? Introduction { get; set; }
 
         [Required(ErrorMessage = "Content is required")]
-        public string Content { get; set; } = string.Empty;
+        public string Content { get; set; } = default!;
 
         public string? BannerImageUrl { get; set; }
 

@@ -14,7 +14,7 @@ public partial class ArticleCarousels
     [ForeignKey("Article")]
     public Guid ArticleId { get; set; } 
 
-    public string Title { get; set; }
+    public string Title { get; set; } = default!;
 
-    public virtual Article Article { get; set; }
+    public virtual Article Article { get; set; } = default!;
 }

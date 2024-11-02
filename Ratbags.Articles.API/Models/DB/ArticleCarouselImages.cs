@@ -15,9 +15,9 @@ public partial class ArticleCarouselImages
     [ForeignKey("ArticleCarousels")]
     public Guid CarouselId { get; set; }
 
-    public string ImageUrl { get; set; }
+    public string ImageUrl { get; set; } = default!;
 
-    public string Description { get; set; }
+    public string Description { get; set; } = default!;
 
-    public virtual ArticleCarousels Carousel { get; set; }
+    public virtual ArticleCarousels Carousel { get; set; } = default!;
 }

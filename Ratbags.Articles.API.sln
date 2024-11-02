@@ -5,6 +5,8 @@ VisualStudioVersion = 17.10.35013.160
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ratbags.Articles.API", "Ratbags.Articles.API\Ratbags.Articles.API.csproj", "{A3F89398-2643-41B7-8124-9FE15C41F72A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ratbags.Articles.API.Tests", "Ratbags.Articles.API.Tests\Ratbags.Articles.API.Tests.csproj", "{B8C8DCB0-B7B3-435A-BD52-60D484268E16}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{A3F89398-2643-41B7-8124-9FE15C41F72A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3F89398-2643-41B7-8124-9FE15C41F72A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3F89398-2643-41B7-8124-9FE15C41F72A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8C8DCB0-B7B3-435A-BD52-60D484268E16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8C8DCB0-B7B3-435A-BD52-60D484268E16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8C8DCB0-B7B3-435A-BD52-60D484268E16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8C8DCB0-B7B3-435A-BD52-60D484268E16}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

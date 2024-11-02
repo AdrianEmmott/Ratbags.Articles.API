@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.Models.API;
-using Ratbags.Core.DTOs.Articles;
+using Ratbags.Articles.API.Models.DTOs;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
 

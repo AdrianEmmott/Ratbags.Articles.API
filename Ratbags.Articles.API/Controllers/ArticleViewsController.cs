@@ -1,10 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Ratbags.Articles.API.Interfaces;
-using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.Models.API;
-using Ratbags.Core.DTOs.Articles;
-using Ratbags.Core.Models.Articles;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
 
@@ -57,7 +53,7 @@ public class ArticleViewsController : ControllerBase
 
             return BadRequest($"Failed to increment view count for article {model.ArticleId}");
         }
-        catch (Exception e)
+        catch
         {
             return StatusCode((int)HttpStatusCode.InternalServerError,
                 $"An error occurred while incrementing the view count for article {model.ArticleId}");

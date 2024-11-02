@@ -1,6 +1,4 @@
-﻿using MassTransit;
-using Ratbags.Core.DTOs.Articles;
-using Ratbags.Core.Events.CommentsRequest;
+﻿using Ratbags.Core.DTOs.Articles;
 
 namespace Ratbags.Articles.API.Interfaces;
 

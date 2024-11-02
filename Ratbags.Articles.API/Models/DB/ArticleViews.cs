@@ -12,5 +12,5 @@ public partial class ArticleViews
 
     public int Views { get; set; }
 
-    public virtual Article Article { get; set; }
+    public virtual Article Article { get; set; } = default!;
 }
