@@ -6,16 +6,16 @@ namespace Ratbags.Articles.API.Services;
 public class ArticlesViewsService : IArticleViewsService
 {
     private readonly IArticleViewsRepository _repository;
-    private readonly IMassTransitService _massTransitService;
+    //private readonly IMassTransitService _massTransitService;
     private readonly ILogger<ArticlesViewsService> _logger;
 
     public ArticlesViewsService(
         IArticleViewsRepository repository,
-        IMassTransitService massTransitService,
+        //IMassTransitService massTransitService,
         ILogger<ArticlesViewsService> logger)
     {
         _repository = repository;
-        _massTransitService = massTransitService;
+        //_massTransitService = massTransitService;
         _logger = logger;
     }
 

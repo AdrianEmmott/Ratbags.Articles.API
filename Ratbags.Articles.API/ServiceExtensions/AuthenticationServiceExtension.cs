@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Ratbags.Core.Settings;
+using Ratbags.Articles.API.Models;
 using System.Text;
 
 namespace Ratbags.Articles.API.ServiceExtensions;
 
 public static class AuthenticationServiceExtension
 {
-    public static IServiceCollection AddAuthenticationServiceExtension(this IServiceCollection services, AppSettingsBase settings)
+    public static IServiceCollection AddAuthenticationServiceExtension(this IServiceCollection services, AppSettings settings)
     {
         services.AddAuthentication(options =>
         {

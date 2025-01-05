@@ -1,7 +1,9 @@
+using Azure.Messaging.ServiceBus;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Azure;
+using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.Models.DB;
 using Ratbags.Articles.API.ServiceExtensions;
-using Ratbags.Core.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,8 +13,8 @@ if (builder.Environment.IsDevelopment())
     builder.Configuration.AddUserSecrets<Program>();
 }
 
-builder.Services.Configure<AppSettingsBase>(builder.Configuration);
-var appSettings = builder.Configuration.Get<AppSettingsBase>() ?? throw new Exception("Appsettings.json missing");
+builder.Services.Configure<AppSettings>(builder.Configuration);
+var appSettings = builder.Configuration.Get<AppSettings>() ?? throw new Exception("Appsettings.json missing");
 
 var certificatePath = string.Empty;
 var certificateKeyPath = string.Empty;
@@ -46,6 +48,11 @@ builder.Services.AddCors(options =>
             .AllowCredentials());
 });
 
+builder.Services.AddSingleton(serviceProvider =>
+{
+    return new ServiceBusClient(appSettings.AZSBTestConnection);
+});
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -58,7 +65,6 @@ builder.Services.AddSwaggerGen(c =>
 
 // add service extensions
 builder.Services.AddDIServiceExtension();
-builder.Services.AddMassTransitWithRabbitMqServiceExtension(appSettings);
 builder.Services.AddAuthenticationServiceExtension(appSettings);
 
 var app = builder.Build();

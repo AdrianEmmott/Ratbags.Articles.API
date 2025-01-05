@@ -1,7 +1,8 @@
 ﻿using MassTransit;
+using Ratbags.Articles.API.Messaging.Requests;
+using Ratbags.Articles.API.Models;
 using Ratbags.Core.Events.Accounts;
 using Ratbags.Core.Events.CommentsRequest;
-using Ratbags.Core.Settings;
 
 namespace Ratbags.Articles.API.ServiceExtensions;
 
@@ -9,7 +10,7 @@ public static class MassTransitServiceExtension
 {
     public static IServiceCollection AddMassTransitWithRabbitMqServiceExtension(
         this IServiceCollection services, 
-        AppSettingsBase appSettings)
+        AppSettings appSettings)
     {
         services.AddMassTransit(x =>
         {
@@ -26,10 +27,16 @@ public static class MassTransitServiceExtension
                     c.SetEntityName("accounts.user-full-name"); // set exchange name for this message type
                 });
 
-                cfg.Message<CommentsForArticleRequest>(c =>
+                //cfg.AddPublishMessageTypes(PublishCommentsRequestMessage);
+
+                cfg.Message<PublishCommentsRequestMessage>(c =>
                 {
                     c.SetEntityName("articles.comments"); // set exchange name for this message type
                 });
+                //cfg.Message<CommentsForArticleRequest>(c =>
+                //{
+                //    c.SetEntityName("articles.comments"); // set exchange name for this message type
+                //});
 
                 cfg.Message<CommentsCountForArticleRequest>(c =>
                 {

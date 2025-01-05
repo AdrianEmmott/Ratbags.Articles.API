@@ -1,10 +1,12 @@
-﻿using MassTransit;
+﻿using Azure.Messaging.ServiceBus;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.Models.API;
 using Ratbags.Articles.API.Models.DB;
 using Ratbags.Articles.API.Models.DTOs;
+using Ratbags.Core.DTOs.Articles;
 using Ratbags.Core.Models;
 
 namespace Ratbags.Articles.API.Services;
@@ -12,17 +14,21 @@ namespace Ratbags.Articles.API.Services;
 public class ArticlesService : IArticlesService
 {
     private readonly IArticlesRepository _repository;
-    private readonly IMassTransitService _massTransitService;
+    private readonly IServiceBusService _serviceBusService;
     private readonly ILogger<ArticlesService> _logger;
+
+    private readonly ServiceBusClient _sbClient;
 
     public ArticlesService(
         IArticlesRepository repository,
-        IMassTransitService massTransitService,
-        ILogger<ArticlesService> logger)
+        IServiceBusService serviceBusService,
+        ILogger<ArticlesService> logger,
+        ServiceBusClient sbClient)
     {
         _repository = repository;
-        _massTransitService = massTransitService;
+        _serviceBusService = serviceBusService;
         _logger = logger;
+        _sbClient = sbClient;
     }
 
     public async Task<Guid> CreateAsync(ArticleCreate model)
@@ -91,7 +97,7 @@ public class ArticlesService : IArticlesService
                     Title = article.Title,
                     Description = article.Description,
                     ThumbnailImageUrl = article.BannerImageUrl ?? string.Empty,
-                    CommentCount = await _massTransitService.GetCommentsCountForArticleAsync(article.Id),
+                    //CommentCount = await _massTransitService.GetCommentsCountForArticleAsync(article.Id), // TODO
                     Published = article.Published
                 };
 
@@ -123,7 +129,20 @@ public class ArticlesService : IArticlesService
         {
             try
             {
-                var comments = await _massTransitService.GetCommentsForArticleAsync(article.Id);
+                // test code for azsbem
+                var topicName = "comments-topic";
+                var comments = new List<CommentDTO>();
+
+                try
+                {   
+                    comments = await _serviceBusService.GetCommentsForArticleAsync(article.Id);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError($"Error creating message for topic {topicName}: {e.Message}");
+                    throw;
+                }
+               
 
                 var articleDTO =  new ArticleDTO
                 {
@@ -137,16 +156,15 @@ public class ArticlesService : IArticlesService
                     Updated = article.Updated,
                     Published = article.Published,
                     Comments = comments,
-                    AuthorName = await _massTransitService.GetUserNameDetailsAsync(article.UserId),
+                    AuthorName = "some author"//await _massTransitService.GetUserNameDetailsAsync(article.UserId),
                 };
 
                 return articleDTO;
             }
-            catch (MassTransitException e)
+            catch(Exception ex)
             {
-                _logger.LogError($"Error sending comments request for article {id}: {e.Message}");
-                throw;
-            }
+                // ignore for now...
+            } 
         }
 
         return null;

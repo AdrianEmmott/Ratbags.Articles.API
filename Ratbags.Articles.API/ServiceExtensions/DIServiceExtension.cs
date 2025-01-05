@@ -15,7 +15,7 @@ public static class DIServiceExtension
         services.AddScoped<IArticleViewsService, ArticlesViewsService>();
         services.AddScoped<IArticleViewsRepository, ArticlesViewsRepository>();        
         
-        services.AddScoped<IMassTransitService, MassTransitService>();
+        services.AddScoped<IServiceBusService, ServiceBusService>();
 
         return services;
     }
