@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Ratbags.Articles.API.Interfaces;
+using Ratbags.Articles.API.Messaging;
 using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.Models.API;
 using Ratbags.Articles.API.Models.DB;
@@ -152,6 +153,14 @@ public class ArticlesService : IArticlesService
                     ));
                 }
             }
+
+            // get author username -
+            // TODO - using the same sb method which only takes a list of user ids is... alright
+            // could have multiple authors in the future
+            var authorUserIds = new List<Guid>();
+            authorUserIds.Add(article.UserId);
+            var authorUsername = await _serviceBusService.GetUserNameDetails(authorUserIds);
+            
             
             var articleDTO = new ArticleDTO
             {
@@ -165,7 +174,7 @@ public class ArticlesService : IArticlesService
                 Updated = article.Updated,
                 Published = article.Published,
                 Comments = comments,
-                AuthorName = "some author"
+                AuthorName = authorUsername?.First().Value ?? "unkown author"
             };
 
             return articleDTO;
