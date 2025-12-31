@@ -22,7 +22,7 @@ namespace Ratbags.Articles.API.Models.DTOs
 
         public DateTime? Published { get; set; }
 
-        public List<CommentDTO>? Comments { get; set; } = new List<CommentDTO>();
+        public List<ArticleCommentDTO>? Comments { get; set; } = new List<ArticleCommentDTO>();
 
         public string AuthorName { get; set; } = default!;
 

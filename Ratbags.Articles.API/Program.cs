@@ -1,6 +1,6 @@
 using Azure.Messaging.ServiceBus;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Azure;
 using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.Models.DB;
 using Ratbags.Articles.API.ServiceExtensions;
@@ -50,7 +50,12 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSingleton(serviceProvider =>
 {
-    return new ServiceBusClient(appSettings.AZSBTestConnection);
+    return new ServiceBusClient(appSettings.Messaging.ASB.Connection);
+});
+
+builder.Services.Configure<JsonOptions>(x =>
+{
+    x.SerializerOptions.PropertyNameCaseInsensitive = true;
 });
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

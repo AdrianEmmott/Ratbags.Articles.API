@@ -1,12 +1,9 @@
-﻿using Azure.Messaging.ServiceBus;
-using MassTransit;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.Models.API;
 using Ratbags.Articles.API.Models.DB;
 using Ratbags.Articles.API.Models.DTOs;
-using Ratbags.Core.DTOs.Articles;
 using Ratbags.Core.Models;
 
 namespace Ratbags.Articles.API.Services;
@@ -14,21 +11,17 @@ namespace Ratbags.Articles.API.Services;
 public class ArticlesService : IArticlesService
 {
     private readonly IArticlesRepository _repository;
-    private readonly IServiceBusService _serviceBusService;
+    private readonly IArticlesServiceBusService _serviceBusService;
     private readonly ILogger<ArticlesService> _logger;
-
-    private readonly ServiceBusClient _sbClient;
 
     public ArticlesService(
         IArticlesRepository repository,
-        IServiceBusService serviceBusService,
-        ILogger<ArticlesService> logger,
-        ServiceBusClient sbClient)
+        IArticlesServiceBusService serviceBusService,
+        ILogger<ArticlesService> logger)
     {
         _repository = repository;
         _serviceBusService = serviceBusService;
         _logger = logger;
-        _sbClient = sbClient;
     }
 
     public async Task<Guid> CreateAsync(ArticleCreate model)
@@ -89,24 +82,32 @@ public class ArticlesService : IArticlesService
 
         foreach (var article in articles)
         {
-            try
+            var dto = new ArticleListDTO
             {
-                var dto = new ArticleListDTO
-                {
-                    Id = article.Id,
-                    Title = article.Title,
-                    Description = article.Description,
-                    ThumbnailImageUrl = article.BannerImageUrl ?? string.Empty,
-                    //CommentCount = await _massTransitService.GetCommentsCountForArticleAsync(article.Id), // TODO
-                    Published = article.Published
-                };
+                Id = article.Id,
+                Title = article.Title,
+                Description = article.Description,
+                ThumbnailImageUrl = article.BannerImageUrl ?? string.Empty,
+                Published = article.Published
+            };
 
-                listDTOs.Add(dto);
-            }
-            catch (MassTransitException e)
+            listDTOs.Add(dto);
+        }
+
+        var articleCommentCounts =
+                    await _serviceBusService
+                        .GetArticlesCommentsCount(articles.Select(x => x.Id)
+                        .ToList());
+
+        if (articleCommentCounts != null)
+        {
+            foreach (var listDTO in listDTOs)
             {
-                _logger.LogError($"Error sending comments count request for article {article.Id}: {e.Message} : {e.InnerException}");
-                throw;
+                listDTO.CommentCount =
+                    articleCommentCounts
+                        .Where(x => x.Key == listDTO.Id)
+                        .Select(x => x.Value)
+                        .FirstOrDefault();
             }
         }
 
@@ -127,44 +128,47 @@ public class ArticlesService : IArticlesService
 
         if (article != null)
         {
-            try
+            List<ArticleCommentDTO> comments = new List<ArticleCommentDTO>();
+
+            // service bus call to get comments
+            var sbComments = await _serviceBusService.GetCommentsForArticleAsync(article.Id);
+
+            // service bus call to get commenter user ids
+            if (sbComments != null)
             {
-                // test code for azsbem
-                var topicName = "comments-topic";
-                var comments = new List<CommentDTO>();
+                var userIds = sbComments.Select(x => x.UserId).Distinct().ToList();
 
-                try
-                {   
-                    comments = await _serviceBusService.GetCommentsForArticleAsync(article.Id);
-                }
-                catch (Exception e)
+                var usernames = await _serviceBusService.GetUserNameDetails(userIds);
+
+                foreach (var comment in sbComments)
                 {
-                    _logger.LogError($"Error creating message for topic {topicName}: {e.Message}");
-                    throw;
+                    var username = usernames?.Where(x => x.Key == comment.UserId).FirstOrDefault().Value;
+                    
+                    comments.Add(new ArticleCommentDTO(
+                        Id: comment.Id,
+                        Content: comment.Content,
+                        Username: username ?? null,
+                        Published: comment.Published
+                    ));
                 }
-               
-
-                var articleDTO =  new ArticleDTO
-                {
-                    Id = article.Id,
-                    Title = article.Title,
-                    Description = article.Description,
-                    Introduction = article.Introduction,
-                    Content = article.Content,
-                    BannerImageUrl = article.BannerImageUrl,
-                    Created = article.Created,
-                    Updated = article.Updated,
-                    Published = article.Published,
-                    Comments = comments,
-                    AuthorName = "some author"//await _massTransitService.GetUserNameDetailsAsync(article.UserId),
-                };
-
-                return articleDTO;
             }
-            catch(Exception ex)
+            
+            var articleDTO = new ArticleDTO
             {
-                // ignore for now...
-            } 
+                Id = article.Id,
+                Title = article.Title,
+                Description = article.Description,
+                Introduction = article.Introduction,
+                Content = article.Content,
+                BannerImageUrl = article.BannerImageUrl,
+                Created = article.Created,
+                Updated = article.Updated,
+                Published = article.Published,
+                Comments = comments,
+                AuthorName = "some author"
+            };
+
+            return articleDTO;
         }
 
         return null;
