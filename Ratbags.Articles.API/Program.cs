@@ -22,7 +22,9 @@ var certificateKeyPath = string.Empty;
 // are we in docker?
 var isDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
-certificatePath = Path.Combine(appSettings.Certificate.Path, appSettings.Certificate.Name);
+certificatePath = isDocker
+    ? Path.Combine("/https", appSettings.Certificate.Name)
+    : Path.Combine(appSettings.Certificate.Path, appSettings.Certificate.Name);
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
