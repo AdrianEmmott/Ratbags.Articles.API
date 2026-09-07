@@ -36,6 +36,7 @@ public class ArticlesRepository : IArticlesRepository
 
     public async Task<(List<Article> Articles, int TotalCount)> GetArticlesAsync(GetArticlesParameters model)
     {
+        var cxn = _context.Database.GetConnectionString();
         var query = _context.Articles;
 
         // count before building real query

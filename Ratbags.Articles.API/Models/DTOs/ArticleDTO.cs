@@ -1,6 +1,4 @@
-﻿using Ratbags.Core.DTOs.Articles;
-
-namespace Ratbags.Articles.API.Models.DTOs
+﻿namespace Ratbags.Articles.API.Models.DTOs
 {
     public class ArticleDTO
     {
@@ -21,8 +19,6 @@ namespace Ratbags.Articles.API.Models.DTOs
         public DateTime? Updated { get; set; }
 
         public DateTime? Published { get; set; }
-
-        public List<ArticleCommentDTO>? Comments { get; set; } = new List<ArticleCommentDTO>();
 
         public string AuthorName { get; set; } = default!;
 

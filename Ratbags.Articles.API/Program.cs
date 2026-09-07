@@ -1,9 +1,10 @@
-using Azure.Messaging.ServiceBus;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
+using Ratbags.Accounts.Client;
 using Ratbags.Articles.API.Models;
 using Ratbags.Articles.API.Models.DB;
 using Ratbags.Articles.API.ServiceExtensions;
+using Ratbags.Core.Messaging.ASB;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,10 +51,11 @@ builder.Services.AddCors(options =>
             .AllowCredentials());
 });
 
-builder.Services.AddSingleton(serviceProvider =>
-{
-    return new ServiceBusClient(appSettings.Messaging.ASB.Connection);
-});
+builder.Services.AddRatbagsServiceBus(appSettings);
+
+// direct http call to accounts-api - replaces the old asb-based username lookup.
+// cert bypass is dev-only - see AddAccountsClient for why it's needed in docker.
+builder.Services.AddAccountsClient(appSettings.Services.AccountsApi, builder.Environment.IsDevelopment());
 
 builder.Services.Configure<JsonOptions>(x =>
 {
@@ -96,7 +98,8 @@ else
     app.UseDeveloperExceptionPage();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+if (!app.Environment.IsEnvironment("Docker")) app.UseHttpsRedirection();
 
 app.UseAuthentication();
 

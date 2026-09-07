@@ -10,7 +10,7 @@ using System.Net;
 namespace Ratbags.Articles.API.Controllers;
 
 [ApiController]
-[Route("api/articles")]
+[Route("api/articles")] 
 public class ArticlesController : ControllerBase
 {
     private readonly IArticlesService _service;

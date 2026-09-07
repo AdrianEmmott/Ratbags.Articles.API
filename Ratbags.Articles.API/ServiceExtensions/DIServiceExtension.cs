@@ -22,6 +22,7 @@ public static class DIServiceExtension
         services.AddSingleton(x => x.GetRequiredService<IOptions<AppSettings>>().Value);
 
         services.AddSingleton<IArticlesServiceBusService, ArticlesServiceBusService>();
+        services.AddHostedService(sp => (ArticlesServiceBusService)sp.GetRequiredService<IArticlesServiceBusService>());
 
         return services;
     }

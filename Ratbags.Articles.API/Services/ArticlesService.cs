@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Ratbags.Accounts.Client;
 using Ratbags.Articles.API.Interfaces;
 using Ratbags.Articles.API.Messaging;
 using Ratbags.Articles.API.Models;
@@ -13,15 +14,18 @@ public class ArticlesService : IArticlesService
 {
     private readonly IArticlesRepository _repository;
     private readonly IArticlesServiceBusService _serviceBusService;
+    private readonly IAccountsClient _accountsClient;
     private readonly ILogger<ArticlesService> _logger;
 
     public ArticlesService(
         IArticlesRepository repository,
         IArticlesServiceBusService serviceBusService,
+        IAccountsClient accountsClient,
         ILogger<ArticlesService> logger)
     {
         _repository = repository;
         _serviceBusService = serviceBusService;
+        _accountsClient = accountsClient;
         _logger = logger;
     }
 
@@ -95,22 +99,22 @@ public class ArticlesService : IArticlesService
             listDTOs.Add(dto);
         }
 
-        var articleCommentCounts =
-                    await _serviceBusService
-                        .GetArticlesCommentsCount(articles.Select(x => x.Id)
-                        .ToList());
+        //var articleCommentCounts =
+        //            await _serviceBusService
+        //                .GetArticlesCommentsCount(articles.Select(x => x.Id)
+        //                .ToList());
 
-        if (articleCommentCounts != null)
-        {
-            foreach (var listDTO in listDTOs)
-            {
-                listDTO.CommentCount =
-                    articleCommentCounts
-                        .Where(x => x.Key == listDTO.Id)
-                        .Select(x => x.Value)
-                        .FirstOrDefault();
-            }
-        }
+        //if (articleCommentCounts != null)
+        //{
+        //    foreach (var listDTO in listDTOs)
+        //    {
+        //        listDTO.CommentCount =
+        //            articleCommentCounts
+        //                .Where(x => x.Key == listDTO.Id)
+        //                .Select(x => x.Value)
+        //                .FirstOrDefault();
+        //    }
+        //}
 
         var result = new PagedResult<ArticleListDTO>
         {
@@ -129,39 +133,16 @@ public class ArticlesService : IArticlesService
 
         if (article != null)
         {
-            List<ArticleCommentDTO> comments = new List<ArticleCommentDTO>();
-
-            // service bus call to get comments
-            var sbComments = await _serviceBusService.GetCommentsForArticleAsync(article.Id);
-
-            // service bus call to get commenter user ids
-            if (sbComments != null)
-            {
-                var userIds = sbComments.Select(x => x.UserId).Distinct().ToList();
-
-                var usernames = await _serviceBusService.GetUserNameDetails(userIds);
-
-                foreach (var comment in sbComments)
-                {
-                    var username = usernames?.Where(x => x.Key == comment.UserId).FirstOrDefault().Value;
-                    
-                    comments.Add(new ArticleCommentDTO(
-                        Id: comment.Id,
-                        Content: comment.Content,
-                        Username: username ?? null,
-                        Published: comment.Published
-                    ));
-                }
-            }
-
             // get author username -
-            // TODO - using the same sb method which only takes a list of user ids is... alright
+            // TODO - using the same lookup which only takes a list of user ids is... alright
             // could have multiple authors in the future
             var authorUserIds = new List<Guid>();
             authorUserIds.Add(article.UserId);
-            var authorUsername = await _serviceBusService.GetUserNameDetails(authorUserIds);
-            
-            
+            var authorUsername = await _accountsClient.GetUsernamesAsync(authorUserIds);
+
+            // comments are no longer fetched here - moving to a dedicated http call to
+            // Comments.API (was an ASB call via GetCommentsForArticleAsync, since removed)
+
             var articleDTO = new ArticleDTO
             {
                 Id = article.Id,
@@ -173,8 +154,9 @@ public class ArticlesService : IArticlesService
                 Created = article.Created,
                 Updated = article.Updated,
                 Published = article.Published,
-                Comments = comments,
-                AuthorName = authorUsername?.First().Value ?? "unkown author"
+                // authorUsername may not contain an entry at all if the account no
+                // longer exists - don't assume .First() will always have something
+                AuthorName = authorUsername?.Values.FirstOrDefault() ?? "unknown author"
             };
 
             return articleDTO;

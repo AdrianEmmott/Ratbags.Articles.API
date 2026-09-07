@@ -1,10 +1,4 @@
-﻿using Ratbags.Core.DTOs.Articles;
-
-namespace Ratbags.Articles.API.Messaging;
-
-// article comments
-public sealed record GetCommentsForArticleRequest(Guid articleId);
-public sealed record GetCommentsForArticleResponse(IEnumerable<CommentCoreDTO>? comments);
+﻿namespace Ratbags.Articles.API.Messaging;
 
 // article comment counts
 public sealed record GetCommentCountsForArticlesRequest(IReadOnlyList<Guid> ArticleIds);
